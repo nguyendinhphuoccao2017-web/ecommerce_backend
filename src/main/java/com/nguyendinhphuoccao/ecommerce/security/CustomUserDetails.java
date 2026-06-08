@@ -25,9 +25,13 @@ public class CustomUserDetails implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         if (staffAccount != null) {
-            return Collections.singletonList(new SimpleGrantedAuthority("ROLE_STAFF"));
+            String roleName = "STAFF";
+            if (staffAccount.getRole() != null && staffAccount.getRole().getRoleName() != null) {
+                roleName = staffAccount.getRole().getRoleName();
+            }
+            return Collections.singletonList(new SimpleGrantedAuthority(roleName));
         }
-        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_CUSTOMER"));
+        return Collections.singletonList(new SimpleGrantedAuthority("CUSTOMER"));
     }
 
     @Override

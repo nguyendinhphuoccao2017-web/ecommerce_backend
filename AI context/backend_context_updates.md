@@ -50,3 +50,38 @@ Tài liệu này lưu trữ lịch sử các chức năng đã làm, theo dõi c
 - **Mục đích:** 
     - Đảm bảo luồng POST/PUT của Product lưu chính xác thông tin nhân viên thao tác (`createdBy`, `updatedBy`).
     - Quản lý tốt quan hệ Nhiều-Nhiều (ManyToMany) giữa Product và Tag mà không cần phải thực hiện thủ công ngoài Controller.
+
+### 7. Tạo Mới Endpoint Tạo Sản Phẩm Hàng Loạt (Batch Insert)
+- **File:** `src\main\java\com\nguyendinhphuoccao\ecommerce\controller\StaffProductController.java` & `ProductRequestDTO.java`
+- **Thay đổi:** 
+    - Tạo controller mới ánh xạ với `@RequestMapping("/api/staff/products")` chứa `@PostMapping` nhận vào `List<ProductRequestDTO>`.
+    - Thêm `categoryName` (String) và `galleries` (List<GalleryDTO>) vào `ProductRequestDTO` để tương thích với dữ liệu mảng gửi từ Client.
+- **Mục đích:** Xây dựng luồng tạo sản phẩm hàng loạt cùng một lúc thay vì gọi API liên tục cho từng sản phẩm.
+
+### 8. Tự Động Xử Lý Danh Mục, Hình Ảnh & Giá Trị Mặc Định Của Sản Phẩm
+- **File:** `src\main\java\com\nguyendinhphuoccao\ecommerce\service\impl\ProductServiceImpl.java`
+- **Thay đổi:**
+    - Cập nhật hàm `create` và `update` để gọi các hàm trợ giúp mới (`processCategory`, `processGalleries`, `ensureRequiredFields`).
+    - **`processCategory`**: Tìm `Category` dựa vào `categoryName` qua `CategoryRepository`. Nếu chưa có thì tự động tạo `Category` mới, sau đó thiết lập mapping `ProductCategory` để lưu qua Cascade.
+    - **`processGalleries`**: Quét danh sách `GalleryDTO` truyền vào và tự động tạo/gắn vào Entity `Gallery` của Product.
+    - **`ensureRequiredFields`**: Tự sinh chuỗi random cho `slug`, gán mặc định `quantity` bằng 100, và copy giá trị sang `shortDescription`/`productDescription` nếu Client không gửi để tránh lỗi `DataIntegrityViolationException`.
+
+### 9. Khắc Phục Lỗi 403 Forbidden Xuyên Suốt Luồng Xác Thực (Spring Security)
+- **File:** `CustomUserDetailsService.java`, `CustomUserDetails.java`, `SecurityConfig.java`
+- **Thay đổi & Mục đích:**
+    - **`CustomUserDetailsService`**: Hoán đổi thứ tự ưu tiên kiểm tra `StaffAccount` trước `Customer` trong hàm `loadUserByUsername` để tránh việc tài khoản Staff bị nhận diện nhầm thành Customer nếu vô tình đăng ký trùng Email.
+    - **`LazyInitializationException`**: Thêm `@Transactional` vào `CustomUserDetailsService` và gọi `staff.getRole().getRoleName()` ngay bên trong hàm tìm User để nạp sẵn (Eagerly initialize) tên Role. Cứu luồng xác thực khỏi lỗi ngầm khi `JwtAuthenticationFilter` gọi hàm `getAuthorities()` nằm ngoài session của Hibernate.
+    - **`CustomUserDetails`**: Loại bỏ việc gán cứng `"ROLE_STAFF"`. Trực tiếp bóc tách chuỗi phân quyền từ Role của Database thông qua `staffAccount.getRole().getRoleName()`.
+    - **`SecurityConfig`**: Bổ sung rào chắn bảo vệ API Staff bằng `.requestMatchers("/api/staff/**").hasAnyAuthority("STAFF", "ADMIN", "ROLE_STAFF", "ROLE_ADMIN")` bảo đảm tương thích với tên Role thực tế trong Database.
+
+### 10. Giải Quyết Triệt Để Lỗi Proxy Bằng `@EntityGraph`
+- **File:** `src\main\java\com\nguyendinhphuoccao\ecommerce\repository\StaffAccountRepository.java`
+- **Thay đổi:** Thêm Annotation `@EntityGraph(attributePaths = {"role"})` vào ngay trên phương thức `findByEmail(String email)`. Cùng lúc đó, tháo bỏ khối lệnh ép nạp proxy thủ công (`staff.getRole().getRoleName()`) bên trong `CustomUserDetailsService`.
+- **Mục đích:** Tối ưu hóa truy vấn bằng cơ chế `LEFT JOIN FETCH` của JPA, tải trực tiếp `Role` ngay trong cùng 1 câu SQL cùng với `StaffAccount`. Qua đó xóa bỏ vĩnh viễn rủi ro dính `LazyInitializationException` mà không cần phụ thuộc vào annotation `@Transactional`.
+
+### 11. Bắt Bệnh "Masked Error" (403 Forbidden) & Lỗi Schema Bảng Trung Gian
+- **File:** `SecurityConfig.java` & Database (`product_tags`)
+- **Thay đổi & Mục đích:**
+    - **Vạch trần lỗi ảo 403:** Mở khóa `.requestMatchers("/error").permitAll()` trong `SecurityConfig`. Điều này giúp hệ thống tiết lộ các lỗi gốc (400, 500) do Database ném ra thay vì bị Spring Security "giấu" dưới mã 403 Forbidden.
+    - **Khắc phục lỗi Database Schema:** Phát hiện Supabase tự động sinh ra cột `id` (uuid) mang ràng buộc `NOT NULL` cho bảng `product_tags` dù cấu trúc Java ánh xạ đây là bảng 2 cột (`@ManyToMany`). Thay vì tạo entity `ProductTag` rườm rà, giải pháp đã áp dụng là giữ nguyên `@ManyToMany` trên Java và tác động trực tiếp vào cấu trúc Database: `ALTER TABLE product_tags ALTER COLUMN id SET DEFAULT gen_random_uuid()`. Khi đó, Hibernate chỉ insert `product_id` và `tag_id`, phần còn lại Postgres sẽ tự sinh ID hoàn hảo.
+

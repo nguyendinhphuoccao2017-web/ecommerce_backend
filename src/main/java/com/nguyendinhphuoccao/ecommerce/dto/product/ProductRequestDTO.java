@@ -25,4 +25,12 @@ public class ProductRequestDTO {
     private String productType;
     private Boolean published;
     private List<String> tags;
+    private String categoryName;
+    private List<GalleryDTO> galleries;
+
+    @Data
+    public static class GalleryDTO {
+        private String imageUrl;
+        private Boolean isThumbnail;
+    }
 }

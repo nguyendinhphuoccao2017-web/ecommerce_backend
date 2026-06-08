@@ -34,7 +34,7 @@ public class StaffAccount {
     @Column(name = "phone_number", length = 100)
     private String phoneNumber;
 
-    @Column(name = "email", nullable = false, unique = true)
+    @Column(name = "email", nullable = false, unique = true, length = 255)
     private String email;
 
     @Column(name = "password_hash", nullable = false, columnDefinition = "TEXT")
@@ -66,4 +66,23 @@ public class StaffAccount {
     @OneToMany(mappedBy = "account", cascade = CascadeType.ALL)
     @com.fasterxml.jackson.annotation.JsonIgnore
     private List<Notification> notifications;
+
+    // Tự động gán giá trị mặc định trước khi lưu xuống PostgreSQL nếu trên Postman không truyền
+    @PrePersist
+    protected void onCreate() {
+        if (this.active == null) {
+            this.active = true; // Khớp với DEFAULT TRUE
+        }
+        if (this.createdAt == null) {
+            this.createdAt = OffsetDateTime.now(); // Khớp với DEFAULT NOW()
+        }
+        if (this.updatedAt == null) {
+            this.updatedAt = OffsetDateTime.now(); // Khớp với DEFAULT NOW()
+        }
+    }
+
+    @PreUpdate
+    protected void onUpdate() {
+        this.updatedAt = OffsetDateTime.now();
+    }
 }

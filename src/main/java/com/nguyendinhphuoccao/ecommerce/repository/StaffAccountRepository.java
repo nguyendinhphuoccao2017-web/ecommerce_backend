@@ -9,5 +9,6 @@ import java.util.Optional;
 
 @Repository
 public interface StaffAccountRepository extends JpaRepository<StaffAccount, UUID> {
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"role"})
     Optional<StaffAccount> findByEmail(String email);
 }

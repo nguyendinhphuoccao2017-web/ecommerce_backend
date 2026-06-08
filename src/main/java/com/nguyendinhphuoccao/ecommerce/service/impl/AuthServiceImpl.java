@@ -61,11 +61,19 @@ public class AuthServiceImpl implements AuthService {
             return AuthResponse.builder().error("Staff Email already exists").build();
         }
 
+        com.nguyendinhphuoccao.ecommerce.entity.Role role = null;
+        if (request.getRole() != null && request.getRole().getId() != null) {
+            role = new com.nguyendinhphuoccao.ecommerce.entity.Role();
+            role.setId(request.getRole().getId());
+        }
+
         com.nguyendinhphuoccao.ecommerce.entity.StaffAccount staff = com.nguyendinhphuoccao.ecommerce.entity.StaffAccount.builder()
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
                 .email(request.getEmail())
                 .passwordHash(passwordEncoder.encode(request.getPassword()))
+                .phoneNumber(request.getPhoneNumber())
+                .role(role)
                 .active(true)
                 .createdAt(OffsetDateTime.now())
                 .updatedAt(OffsetDateTime.now())

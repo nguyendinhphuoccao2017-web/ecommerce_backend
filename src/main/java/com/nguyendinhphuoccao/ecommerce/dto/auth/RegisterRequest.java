@@ -14,4 +14,11 @@ public class RegisterRequest {
     private String lastName;
     private String email;
     private String password;
+    private String phoneNumber;
+    private RoleRequest role;
+
+    @lombok.Data
+    public static class RoleRequest {
+        private java.util.UUID id;
+    }
 }

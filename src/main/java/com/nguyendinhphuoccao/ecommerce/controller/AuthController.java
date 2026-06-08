@@ -29,7 +29,7 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
-    @PostMapping("/staff/register")
+    @PostMapping("/register/staff")
     public ResponseEntity<AuthResponse> registerStaff(@RequestBody RegisterRequest request) {
         log.info("=== START STAFF REGISTER ===");
         log.info("Staff Email: {}", request.getEmail());

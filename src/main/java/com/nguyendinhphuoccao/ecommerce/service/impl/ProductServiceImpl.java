@@ -24,6 +24,7 @@ public class ProductServiceImpl implements ProductService {
 
     private final ProductRepository repository;
     private final TagRepository tagRepository;
+    private final com.nguyendinhphuoccao.ecommerce.repository.CategoryRepository categoryRepository;
 
     private StaffAccount getCurrentStaff() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -69,6 +70,69 @@ public class ProductServiceImpl implements ProductService {
         }
     }
 
+    private void processCategory(ProductRequestDTO request, Product product) {
+        if (request.getCategoryName() != null && !request.getCategoryName().trim().isEmpty()) {
+            com.nguyendinhphuoccao.ecommerce.entity.Category category = categoryRepository.findByCategoryName(request.getCategoryName())
+                .orElseGet(() -> {
+                    com.nguyendinhphuoccao.ecommerce.entity.Category newCat = new com.nguyendinhphuoccao.ecommerce.entity.Category();
+                    newCat.setCategoryName(request.getCategoryName());
+                    newCat.setCreatedBy(getCurrentStaff());
+                    newCat.setCreatedAt(java.time.OffsetDateTime.now());
+                    newCat.setUpdatedAt(java.time.OffsetDateTime.now());
+                    return categoryRepository.save(newCat);
+                });
+            
+            com.nguyendinhphuoccao.ecommerce.entity.ProductCategory pc = new com.nguyendinhphuoccao.ecommerce.entity.ProductCategory();
+            pc.setCategory(category);
+            pc.setProduct(product);
+
+            if (product.getProductCategories() == null) {
+                product.setProductCategories(new java.util.ArrayList<>());
+            }
+            product.getProductCategories().add(pc);
+        }
+    }
+
+    private void processGalleries(ProductRequestDTO request, Product product) {
+        if (request.getGalleries() != null && !request.getGalleries().isEmpty()) {
+            List<com.nguyendinhphuoccao.ecommerce.entity.Gallery> galleries = new java.util.ArrayList<>();
+            for (ProductRequestDTO.GalleryDTO dto : request.getGalleries()) {
+                com.nguyendinhphuoccao.ecommerce.entity.Gallery gallery = new com.nguyendinhphuoccao.ecommerce.entity.Gallery();
+                gallery.setImage(dto.getImageUrl());
+                gallery.setIsThumbnail(dto.getIsThumbnail() != null ? dto.getIsThumbnail() : false);
+                gallery.setPlaceholder("");
+                gallery.setProduct(product);
+                gallery.setCreatedAt(java.time.OffsetDateTime.now());
+                gallery.setUpdatedAt(java.time.OffsetDateTime.now());
+                galleries.add(gallery);
+            }
+            if (product.getGalleries() != null) {
+                product.getGalleries().clear();
+                product.getGalleries().addAll(galleries);
+            } else {
+                product.setGalleries(galleries);
+            }
+        }
+    }
+
+    private void ensureRequiredFields(Product product) {
+        if (product.getSlug() == null || product.getSlug().isEmpty()) {
+            product.setSlug(java.util.UUID.randomUUID().toString());
+        }
+        if (product.getQuantity() == null) {
+            product.setQuantity(100); // default
+        }
+        if (product.getShortDescription() == null) {
+            product.setShortDescription(product.getProductName() != null ? product.getProductName() : "No short description");
+        }
+        if (product.getProductDescription() == null) {
+            product.setProductDescription(product.getProductName() != null ? product.getProductName() : "No description");
+        }
+        if (product.getPublished() == null) {
+            product.setPublished(true); // default to published so it shows on home page
+        }
+    }
+
     @Override
     public Product create(ProductRequestDTO request) {
         Product product = new Product();
@@ -77,7 +141,10 @@ public class ProductServiceImpl implements ProductService {
         product.setUpdatedAt(java.time.OffsetDateTime.now());
         product.setCreatedAt(java.time.OffsetDateTime.now());
         
+        ensureRequiredFields(product);
         processTags(request, product);
+        processCategory(request, product);
+        processGalleries(request, product);
         
         return repository.save(product);
     }
@@ -89,7 +156,10 @@ public class ProductServiceImpl implements ProductService {
             product.setUpdatedBy(getCurrentStaff());
             product.setUpdatedAt(java.time.OffsetDateTime.now());
             
+            ensureRequiredFields(product);
             processTags(request, product);
+            processCategory(request, product);
+            processGalleries(request, product);
             
             return repository.save(product);
         }).orElse(null);
