@@ -16,7 +16,7 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
 
     @Query("SELECT new com.nguyendinhphuoccao.ecommerce.dto.product.ProductHomeResponseDTO(" +
            "p.id, p.productName, p.salePrice, p.comparePrice, " +
-           "(SELECT g.image FROM Gallery g WHERE g.product.id = p.id AND g.isThumbnail = true LIMIT 1), " +
+           "(SELECT MAX(g.image) FROM Gallery g WHERE g.product.id = p.id AND g.isThumbnail = true), " +
            "COALESCE(AVG(r.rating), 0.0), " +
            "COUNT(r.id)) " +
            "FROM Product p " +
