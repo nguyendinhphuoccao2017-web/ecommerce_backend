@@ -18,12 +18,12 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
             "p.id, p.productName, p.salePrice, p.comparePrice, " +
             "(SELECT MAX(g.image) FROM Gallery g WHERE g.product.id = p.id AND g.isThumbnail = true), " +
             "COALESCE(AVG(r.rating), 0.0), " +
-            "COUNT(r.id)) " +
+            "COUNT(r.id), p.sku) " +
             "FROM Product p " +
             "JOIN p.tags t " +
             "LEFT JOIN p.productReviews r " +
             "WHERE t.tagName = :tagName AND p.published = true " +
-            "GROUP BY p.id, p.productName, p.salePrice, p.comparePrice " +
+            "GROUP BY p.id, p.productName, p.salePrice, p.comparePrice, p.sku " +
             "ORDER BY p.createdAt DESC")
     List<ProductHomeResponseDTO> findProductsByTagName(@Param("tagName") String tagName);
 }

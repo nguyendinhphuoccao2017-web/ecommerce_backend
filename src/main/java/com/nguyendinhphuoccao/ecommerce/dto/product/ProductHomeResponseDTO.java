@@ -21,8 +21,9 @@ public class ProductHomeResponseDTO {
     private Double averageRating;
     private Long totalReviews;
     private String placeholder;
+    private String sku;
 
-    public ProductHomeResponseDTO(UUID id, String productName, BigDecimal salePrice, BigDecimal comparePrice, String thumbnailUrl, Double averageRating, Long totalReviews) {
+    public ProductHomeResponseDTO(UUID id, String productName, BigDecimal salePrice, BigDecimal comparePrice, String thumbnailUrl, Double averageRating, Long totalReviews, String sku) {
         this.id = id;
         this.productName = productName;
         this.salePrice = salePrice;
@@ -30,6 +31,7 @@ public class ProductHomeResponseDTO {
         this.thumbnailUrl = thumbnailUrl;
         this.averageRating = averageRating;
         this.totalReviews = totalReviews;
+        this.sku = sku;
         this.placeholder = null;
     }
 }
