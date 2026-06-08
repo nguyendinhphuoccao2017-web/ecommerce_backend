@@ -25,24 +25,24 @@ public class CustomUserDetails implements UserDetails {
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
         if (staffAccount != null) {
-            String roleName = "STAFF";
-            if (staffAccount.getRole() != null && staffAccount.getRole().getRoleName() != null) {
-                roleName = staffAccount.getRole().getRoleName();
-            }
-            return Collections.singletonList(new SimpleGrantedAuthority(roleName));
+            return Collections.singletonList(new SimpleGrantedAuthority("ROLE_STAFF"));
         }
-        return Collections.singletonList(new SimpleGrantedAuthority("CUSTOMER"));
+        return Collections.singletonList(new SimpleGrantedAuthority("ROLE_CUSTOMER"));
     }
 
     @Override
     public String getPassword() {
-        if (staffAccount != null) return staffAccount.getPasswordHash();
+        if (staffAccount != null) {
+            return staffAccount.getPasswordHash();
+        }
         return customer != null ? customer.getPasswordHash() : null;
     }
 
     @Override
     public String getUsername() {
-        if (staffAccount != null) return staffAccount.getEmail();
+        if (staffAccount != null) {
+            return staffAccount.getEmail();
+        }
         return customer != null ? customer.getEmail() : null;
     }
 
@@ -63,10 +63,12 @@ public class CustomUserDetails implements UserDetails {
 
     @Override
     public boolean isEnabled() {
-        if (staffAccount != null) return staffAccount.getActive() != null ? staffAccount.getActive() : true;
+        if (staffAccount != null) {
+            return staffAccount.getActive() != null ? staffAccount.getActive() : true;
+        }
         return customer != null ? (customer.getActive() != null ? customer.getActive() : true) : true;
     }
-    
+
     public Customer getCustomer() {
         return customer;
     }

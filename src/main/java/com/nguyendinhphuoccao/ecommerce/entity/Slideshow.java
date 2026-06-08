@@ -47,6 +47,7 @@ public class Slideshow {
     @Column(name = "clicks", nullable = false)
     private Integer clicks;
 
+    @org.hibernate.annotations.JdbcTypeCode(org.hibernate.type.SqlTypes.JSON)
     @Column(name = "styles", columnDefinition = "JSONB")
     private String styles;
 

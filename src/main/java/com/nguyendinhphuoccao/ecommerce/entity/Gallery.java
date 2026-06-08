@@ -14,6 +14,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class Gallery {
+
     @Id
     @GeneratedValue(generator = "UUID")
     @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
@@ -27,7 +28,7 @@ public class Gallery {
     @Column(name = "image", nullable = false, columnDefinition = "TEXT")
     private String image;
 
-    @Column(name = "placeholder", columnDefinition = "TEXT")
+    @Column(name = "placeholder", columnDefinition = "TEXT", nullable = true)
     private String placeholder;
 
     @Column(name = "is_thumbnail")
