@@ -5,6 +5,25 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import java.util.UUID;
 
+import com.nguyendinhphuoccao.ecommerce.dto.product.ProductHomeResponseDTO;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+
+import java.util.List;
+
 @Repository
 public interface ProductRepository extends JpaRepository<Product, UUID> {
+
+    @Query("SELECT new com.nguyendinhphuoccao.ecommerce.dto.product.ProductHomeResponseDTO(" +
+           "p.id, p.productName, p.salePrice, p.comparePrice, " +
+           "(SELECT g.image FROM Gallery g WHERE g.product.id = p.id AND g.isThumbnail = true LIMIT 1), " +
+           "COALESCE(AVG(r.rating), 0.0), " +
+           "COUNT(r.id)) " +
+           "FROM Product p " +
+           "JOIN p.tags t " +
+           "LEFT JOIN p.productReviews r " +
+           "WHERE t.tagName = :tagName AND p.published = true " +
+           "GROUP BY p.id, p.productName, p.salePrice, p.comparePrice " +
+           "ORDER BY p.createdAt DESC")
+    List<ProductHomeResponseDTO> findProductsByTagName(@Param("tagName") String tagName);
 }

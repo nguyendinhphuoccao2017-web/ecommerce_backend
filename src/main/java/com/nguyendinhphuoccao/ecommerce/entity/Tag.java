@@ -41,7 +41,7 @@ public class Tag {
     @JoinColumn(name = "updated_by")
     private StaffAccount updatedBy;
 
-    @OneToMany(mappedBy = "tag", cascade = CascadeType.ALL)
+    @ManyToMany(mappedBy = "tags")
     @com.fasterxml.jackson.annotation.JsonIgnore
-    private List<ProductTag> productTags;
+    private List<Product> products;
 }

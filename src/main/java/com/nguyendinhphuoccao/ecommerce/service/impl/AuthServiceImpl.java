@@ -4,6 +4,7 @@ import com.nguyendinhphuoccao.ecommerce.dto.auth.*;
 import com.nguyendinhphuoccao.ecommerce.entity.Customer;
 import com.nguyendinhphuoccao.ecommerce.repository.CustomerRepository;
 import com.nguyendinhphuoccao.ecommerce.security.CustomUserDetails;
+import com.nguyendinhphuoccao.ecommerce.security.CustomUserDetailsService;
 import com.nguyendinhphuoccao.ecommerce.security.JwtService;
 import com.nguyendinhphuoccao.ecommerce.service.AuthService;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +12,7 @@ import org.springframework.mail.SimpleMailMessage;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
@@ -22,6 +24,8 @@ import java.util.Optional;
 public class AuthServiceImpl implements AuthService {
 
     private final CustomerRepository customerRepository;
+    private final com.nguyendinhphuoccao.ecommerce.repository.StaffAccountRepository staffAccountRepository;
+    private final CustomUserDetailsService customUserDetailsService;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
@@ -52,6 +56,30 @@ public class AuthServiceImpl implements AuthService {
     }
 
     @Override
+    public AuthResponse registerStaff(RegisterRequest request) {
+        if (staffAccountRepository.findByEmail(request.getEmail()).isPresent()) {
+            return AuthResponse.builder().error("Staff Email already exists").build();
+        }
+
+        com.nguyendinhphuoccao.ecommerce.entity.StaffAccount staff = com.nguyendinhphuoccao.ecommerce.entity.StaffAccount.builder()
+                .firstName(request.getFirstName())
+                .lastName(request.getLastName())
+                .email(request.getEmail())
+                .passwordHash(passwordEncoder.encode(request.getPassword()))
+                .active(true)
+                .createdAt(OffsetDateTime.now())
+                .updatedAt(OffsetDateTime.now())
+                .build();
+
+        staffAccountRepository.save(staff);
+
+        String jwtToken = jwtService.generateToken(new CustomUserDetails(staff));
+        return AuthResponse.builder()
+                .token(jwtToken)
+                .build();
+    }
+
+    @Override
     public AuthResponse login(LoginRequest request) {
         try {
             authenticationManager.authenticate(
@@ -64,10 +92,9 @@ public class AuthServiceImpl implements AuthService {
             return AuthResponse.builder().error("Doesn’t exist this email. Please Register!").build();
         }
 
-        var customer = customerRepository.findByEmail(request.getEmail())
-                .orElseThrow();
+        UserDetails userDetails = customUserDetailsService.loadUserByUsername(request.getEmail());
         
-        String jwtToken = jwtService.generateToken(new CustomUserDetails(customer));
+        String jwtToken = jwtService.generateToken(userDetails);
         return AuthResponse.builder()
                 .token(jwtToken)
                 .build();

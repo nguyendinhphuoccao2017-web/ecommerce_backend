@@ -29,6 +29,19 @@ public class AuthController {
         return ResponseEntity.ok(response);
     }
 
+    @PostMapping("/staff/register")
+    public ResponseEntity<AuthResponse> registerStaff(@RequestBody RegisterRequest request) {
+        log.info("=== START STAFF REGISTER ===");
+        log.info("Staff Email: {}", request.getEmail());
+        AuthResponse response = authService.registerStaff(request);
+        if (response.getError() != null) {
+            log.error("Staff Register Error: {}", response.getError());
+            return ResponseEntity.badRequest().body(response);
+        }
+        log.info("Staff Register Success. AccessToken: {}", response.getToken());
+        return ResponseEntity.ok(response);
+    }
+
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@RequestBody LoginRequest request) {
         log.info("=== START LOGIN ===");

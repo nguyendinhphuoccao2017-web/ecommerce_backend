@@ -87,9 +87,14 @@ public class Product {
     @com.fasterxml.jackson.annotation.JsonIgnore
     private List<ProductCategory> productCategories;
 
-    @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
+    @ManyToMany
+    @JoinTable(
+        name = "product_tags",
+        joinColumns = @JoinColumn(name = "product_id"),
+        inverseJoinColumns = @JoinColumn(name = "tag_id")
+    )
     @com.fasterxml.jackson.annotation.JsonIgnore
-    private List<ProductTag> productTags;
+    private List<Tag> tags;
 
     @OneToMany(mappedBy = "product", cascade = CascadeType.ALL)
     @com.fasterxml.jackson.annotation.JsonIgnore

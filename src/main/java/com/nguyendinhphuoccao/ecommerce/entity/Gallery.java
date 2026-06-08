@@ -27,7 +27,7 @@ public class Gallery {
     @Column(name = "image", nullable = false, columnDefinition = "TEXT")
     private String image;
 
-    @Column(name = "placeholder", nullable = false, columnDefinition = "TEXT")
+    @Column(name = "placeholder", columnDefinition = "TEXT")
     private String placeholder;
 
     @Column(name = "is_thumbnail")

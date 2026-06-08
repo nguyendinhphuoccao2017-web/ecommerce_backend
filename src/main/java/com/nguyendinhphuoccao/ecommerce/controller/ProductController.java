@@ -9,6 +9,8 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.UUID;
 
+import com.nguyendinhphuoccao.ecommerce.dto.product.ProductRequestDTO;
+
 @RestController
 @RequestMapping("/api/products")
 @RequiredArgsConstructor
@@ -17,13 +19,13 @@ public class ProductController {
     private final ProductService service;
 
     @PostMapping
-    public ResponseEntity<Product> create(@RequestBody Product entity) {
-        return ResponseEntity.ok(service.create(entity));
+    public ResponseEntity<Product> create(@RequestBody ProductRequestDTO request) {
+        return ResponseEntity.ok(service.create(request));
     }
 
     @PutMapping("/{id}")
-    public ResponseEntity<Product> update(@PathVariable UUID id, @RequestBody Product entity) {
-        return ResponseEntity.ok(service.update(id, entity));
+    public ResponseEntity<Product> update(@PathVariable UUID id, @RequestBody ProductRequestDTO request) {
+        return ResponseEntity.ok(service.update(id, request));
     }
 
     @DeleteMapping("/{id}")
@@ -40,5 +42,10 @@ public class ProductController {
     @GetMapping
     public ResponseEntity<List<Product>> getAll() {
         return ResponseEntity.ok(service.getAll());
+    }
+
+    @GetMapping("/home/tags/{tagName}")
+    public ResponseEntity<List<com.nguyendinhphuoccao.ecommerce.dto.product.ProductHomeResponseDTO>> getHomeProductsByTag(@PathVariable String tagName) {
+        return ResponseEntity.ok(service.getProductsByTag(tagName));
     }
 }
