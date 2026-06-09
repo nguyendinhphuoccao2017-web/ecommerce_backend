@@ -57,10 +57,12 @@ public class Slideshow {
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "created_by")
     private StaffAccount createdBy;
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "updated_by")
     private StaffAccount updatedBy;

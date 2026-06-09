@@ -85,3 +85,10 @@ Tài liệu này lưu trữ lịch sử các chức năng đã làm, theo dõi c
     - **Vạch trần lỗi ảo 403:** Mở khóa `.requestMatchers("/error").permitAll()` trong `SecurityConfig`. Điều này giúp hệ thống tiết lộ các lỗi gốc (400, 500) do Database ném ra thay vì bị Spring Security "giấu" dưới mã 403 Forbidden.
     - **Khắc phục lỗi Database Schema:** Phát hiện Supabase tự động sinh ra cột `id` (uuid) mang ràng buộc `NOT NULL` cho bảng `product_tags` dù cấu trúc Java ánh xạ đây là bảng 2 cột (`@ManyToMany`). Thay vì tạo entity `ProductTag` rườm rà, giải pháp đã áp dụng là giữ nguyên `@ManyToMany` trên Java và tác động trực tiếp vào cấu trúc Database: `ALTER TABLE product_tags ALTER COLUMN id SET DEFAULT gen_random_uuid()`. Khi đó, Hibernate chỉ insert `product_id` và `tag_id`, phần còn lại Postgres sẽ tự sinh ID hoàn hảo.
 
+### 12. Tách Biệt API Slideshow Cho Trang Chủ (Giới Hạn 2 Ảnh)
+- **File:** `SlideshowRepository.java`, `SlideshowServiceImpl.java`, `SlideshowController.java`, `SecurityConfig.java`
+- **Thay đổi & Mục đích:**
+    - Thay vì dùng `GET /api/slideshows` (lấy tất cả dữ liệu bao gồm cả ẩn/hiện, vốn chỉ nên dùng cho Admin), đã tạo thêm endpoint riêng `GET /api/slideshows/home`.
+    - Sử dụng hàm Query Method của Spring Data JPA `findTop2ByPublishedTrueOrderByDisplayOrderAsc()` để bảo đảm phía client chỉ nhận đúng 2 ảnh đang được `published=true` và sắp xếp theo `display_order`.
+    - Cập nhật `SecurityConfig.java` cho phép truy cập public không cần xác thực đối với `/api/slideshows/home` nhằm sửa hoàn toàn lỗi `403 Forbidden` trên Mobile App.
+

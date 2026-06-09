@@ -10,4 +10,5 @@ public interface SlideshowService {
     void delete(UUID id);
     Slideshow getById(UUID id);
     List<Slideshow> getAll();
+    List<Slideshow> getHomeSlideshows();
 }

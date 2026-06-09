@@ -86,4 +86,10 @@ public class SlideshowServiceImpl implements SlideshowService {
     public List<Slideshow> getAll() {
         return repository.findAll();
     }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<Slideshow> getHomeSlideshows() {
+        return repository.findTop2ByPublishedTrueOrderByDisplayOrderAsc();
+    }
 }

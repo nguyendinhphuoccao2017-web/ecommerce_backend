@@ -41,4 +41,9 @@ public class SlideshowController {
     public ResponseEntity<List<Slideshow>> getAll() {
         return ResponseEntity.ok(service.getAll());
     }
+
+    @GetMapping("/home")
+    public ResponseEntity<List<Slideshow>> getHomeSlideshows() {
+        return ResponseEntity.ok(service.getHomeSlideshows());
+    }
 }
