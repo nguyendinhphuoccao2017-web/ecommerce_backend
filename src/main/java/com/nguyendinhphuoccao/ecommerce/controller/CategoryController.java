@@ -2,6 +2,8 @@ package com.nguyendinhphuoccao.ecommerce.controller;
 
 import com.nguyendinhphuoccao.ecommerce.entity.Category;
 import com.nguyendinhphuoccao.ecommerce.service.CategoryService;
+import com.nguyendinhphuoccao.ecommerce.service.ProductService;
+import com.nguyendinhphuoccao.ecommerce.dto.product.ProductCategoryResponseDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -15,6 +17,7 @@ import java.util.UUID;
 public class CategoryController {
 
     private final CategoryService service;
+    private final ProductService productService;
 
     @PostMapping
     public ResponseEntity<Category> create(@RequestBody Category entity) {
@@ -40,5 +43,10 @@ public class CategoryController {
     @GetMapping
     public ResponseEntity<List<Category>> getAll() {
         return ResponseEntity.ok(service.getAll());
+    }
+
+    @GetMapping("/{id}/products")
+    public ResponseEntity<List<ProductCategoryResponseDTO>> getProductsByCategory(@PathVariable UUID id) {
+        return ResponseEntity.ok(productService.getProductsByCategory(id));
     }
 }

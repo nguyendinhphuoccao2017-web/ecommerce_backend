@@ -187,4 +187,29 @@ public class ProductServiceImpl implements ProductService {
     public List<com.nguyendinhphuoccao.ecommerce.dto.product.ProductHomeResponseDTO> getProductsByTag(String tagName) {
         return repository.findProductsByTagName(tagName);
     }
+
+    private UUID getCurrentCustomerId() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth != null && auth.getPrincipal() instanceof CustomUserDetails) {
+            com.nguyendinhphuoccao.ecommerce.entity.Customer customer = ((CustomUserDetails) auth.getPrincipal()).getCustomer();
+            if (customer != null) {
+                return customer.getId();
+            }
+        }
+        // Return null instead of throwing an exception, so Staff or other accounts 
+        // can still view the products (with isFavorite defaulting to false).
+        return null;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<com.nguyendinhphuoccao.ecommerce.dto.product.ProductCategoryResponseDTO> getProductsByCategory(UUID categoryId) {
+        UUID customerId = getCurrentCustomerId();
+        com.nguyendinhphuoccao.ecommerce.entity.Category category = categoryRepository.findById(categoryId)
+                .orElseThrow(() -> new com.nguyendinhphuoccao.ecommerce.exception.ResourceNotFoundException("Category not found with id: " + categoryId));
+        if (category.getActive() != null && !category.getActive()) {
+            throw new com.nguyendinhphuoccao.ecommerce.exception.ResourceNotFoundException("Category is inactive");
+        }
+        return repository.findProductsByCategoryIdAndCustomerId(categoryId, customerId);
+    }
 }

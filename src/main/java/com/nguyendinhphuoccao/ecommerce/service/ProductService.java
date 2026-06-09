@@ -13,4 +13,5 @@ public interface ProductService {
     Product getById(UUID id);
     List<Product> getAll();
     List<com.nguyendinhphuoccao.ecommerce.dto.product.ProductHomeResponseDTO> getProductsByTag(String tagName);
+    List<com.nguyendinhphuoccao.ecommerce.dto.product.ProductCategoryResponseDTO> getProductsByCategory(UUID categoryId);
 }

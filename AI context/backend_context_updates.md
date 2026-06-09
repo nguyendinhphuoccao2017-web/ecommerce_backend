@@ -92,3 +92,22 @@ Tài liệu này lưu trữ lịch sử các chức năng đã làm, theo dõi c
     - Sử dụng hàm Query Method của Spring Data JPA `findTop2ByPublishedTrueOrderByDisplayOrderAsc()` để bảo đảm phía client chỉ nhận đúng 2 ảnh đang được `published=true` và sắp xếp theo `display_order`.
     - Cập nhật `SecurityConfig.java` cho phép truy cập public không cần xác thực đối với `/api/slideshows/home` nhằm sửa hoàn toàn lỗi `403 Forbidden` trên Mobile App.
 
+### 13. Khắc Phục Lỗi Connection Pool & Bảo Mật API Slideshow
+- **File:** `application.properties`, `StaffAccount.java`, `Customer.java`, `Slideshow.java`
+- **Thay đổi & Mục đích:**
+    - **Connection Pool:** Giữ nguyên kết nối Session Mode qua port 5432 của Supabase nhưng giới hạn `spring.datasource.hikari.maximum-pool-size=3` để ngăn ứng dụng ngốn quá giới hạn 15 kết nối (gây lỗi `FATAL: EMAXCONNSESSION`).
+    - **Bảo Mật API:** Bịt lỗ hổng rò rỉ dữ liệu nhạy cảm bằng cách thêm `@JsonIgnore` vào `passwordHash` (tránh lộ chuỗi Bcrypt) và ẩn `createdBy`, `updatedBy` khỏi JSON trả về của API Slideshow để giảm tải dung lượng dư thừa.
+
+### 14. Phát Triển API Lấy Sản Phẩm Theo Danh Mục (Category Products) & Bảng Yêu Thích
+- **File:** `CustomerFavorite.java`, `ProductCategoryResponseDTO.java`, `ProductRepository.java`, `ProductServiceImpl.java`, `CategoryController.java`
+- **Thay đổi & Mục đích:**
+    - **Entity `CustomerFavorite`**: Khởi tạo để map với bảng `customer_favorites` trong database, quản lý quan hệ Many-to-One giữa Customer và Product.
+    - **Tối ưu N+1 Query**: Xây dựng hàm `findProductsByCategoryIdAndCustomerId` dùng JPQL constructor trực tiếp trả về `ProductCategoryResponseDTO`. Giải quyết bài toán N+1 bằng cách lấy trực tiếp ảnh Thumbnail (MAX), tính điểm trung bình (AVG), đếm số lượt review (COUNT) và kiểm tra cờ yêu thích (EXISTS) ngay trong 1 câu Query duy nhất.
+    - **Bảo mật & Luồng Auth**: Endpoint `GET /api/categories/{id}/products` yêu cầu bắt buộc phải truyền Token hợp lệ. Bổ sung cơ chế fallback (trả về `null`) nếu tài khoản gọi API là Staff, qua đó gán mặc định `isFavorite = false` thay vì ném lỗi `403 Forbidden`.
+
+### 15. Triển Khai Chức Năng Yêu Thích Sản Phẩm (Favorites)
+- **File:** `CustomerFavoriteRepository.java`, `CustomerFavoriteService.java`, `CustomerFavoriteController.java`, `CustomerFavorite.java`, `ProductRepository.java`
+- **Thay đổi & Mục đích:**
+    - **Hiển thị sản phẩm yêu thích**: Bổ sung JPQL `findFavoriteProductsByCustomerId` vào `ProductRepository` trả về List DTO các sản phẩm được `JOIN` với bảng `CustomerFavorite` và sắp xếp theo ngày Like (`createdAt DESC`). Khởi tạo API `GET /api/favorites`.
+    - **Chức năng Toggle Favorite (Thêm/Xóa)**: Thiết kế API `POST /api/favorites/{productId}/toggle` cho phép Client gọi 1 chạm để Like/Unlike (Xóa bản ghi nếu đã có, tạo mới nếu chưa có).
+    - **Sửa Lỗi Database 500**: Đã khắc phục lỗi `not-null property references a null value` bằng cách bổ sung annotation `@CreationTimestamp` cho thuộc tính `createdAt` tại entity `CustomerFavorite`.

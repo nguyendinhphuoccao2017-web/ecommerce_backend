@@ -26,4 +26,32 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
             "GROUP BY p.id, p.productName, p.salePrice, p.comparePrice, p.sku " +
             "ORDER BY p.createdAt DESC")
     List<ProductHomeResponseDTO> findProductsByTagName(@Param("tagName") String tagName);
+
+    @Query("SELECT new com.nguyendinhphuoccao.ecommerce.dto.product.ProductCategoryResponseDTO(" +
+            "p.id, p.productName, p.slug, p.salePrice, p.comparePrice, " +
+            "(SELECT MAX(g.image) FROM Gallery g WHERE g.product.id = p.id AND g.isThumbnail = true), " +
+            "COALESCE(AVG(r.rating), 0.0), " +
+            "COUNT(r.id), " +
+            "(CASE WHEN EXISTS (SELECT 1 FROM CustomerFavorite cf WHERE cf.product.id = p.id AND cf.customer.id = :customerId) THEN true ELSE false END)) " +
+            "FROM Product p " +
+            "JOIN p.productCategories pc " +
+            "LEFT JOIN p.productReviews r ON r.published = true " +
+            "WHERE pc.category.id = :categoryId AND p.published = true " +
+            "GROUP BY p.id, p.productName, p.slug, p.salePrice, p.comparePrice " +
+            "ORDER BY p.createdAt DESC")
+    List<com.nguyendinhphuoccao.ecommerce.dto.product.ProductCategoryResponseDTO> findProductsByCategoryIdAndCustomerId(@Param("categoryId") UUID categoryId, @Param("customerId") UUID customerId);
+
+    @Query("SELECT new com.nguyendinhphuoccao.ecommerce.dto.product.ProductCategoryResponseDTO(" +
+            "p.id, p.productName, p.slug, p.salePrice, p.comparePrice, " +
+            "(SELECT MAX(g.image) FROM Gallery g WHERE g.product.id = p.id AND g.isThumbnail = true), " +
+            "COALESCE(AVG(r.rating), 0.0), " +
+            "COUNT(r.id), " +
+            "true) " +
+            "FROM Product p " +
+            "JOIN CustomerFavorite cf ON cf.product.id = p.id " +
+            "LEFT JOIN p.productReviews r ON r.published = true " +
+            "WHERE cf.customer.id = :customerId AND p.published = true " +
+            "GROUP BY p.id, p.productName, p.slug, p.salePrice, p.comparePrice, cf.createdAt " +
+            "ORDER BY cf.createdAt DESC")
+    List<com.nguyendinhphuoccao.ecommerce.dto.product.ProductCategoryResponseDTO> findFavoriteProductsByCustomerId(@Param("customerId") UUID customerId);
 }
