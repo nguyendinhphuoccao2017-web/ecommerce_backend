@@ -205,6 +205,19 @@ public class ProductServiceImpl implements ProductService {
     @Transactional(readOnly = true)
     public List<com.nguyendinhphuoccao.ecommerce.dto.product.ProductCategoryResponseDTO> getProductsByCategory(UUID categoryId) {
         UUID customerId = getCurrentCustomerId();
+        
+        if (categoryId.toString().equals("ffffffff-ffff-ffff-ffff-ffffffffffff")) {
+            List<com.nguyendinhphuoccao.ecommerce.dto.product.ProductCategoryResponseDTO> topsList = new java.util.ArrayList<>();
+            List<com.nguyendinhphuoccao.ecommerce.entity.Category> allCategories = categoryRepository.findAll();
+            for (com.nguyendinhphuoccao.ecommerce.entity.Category cat : allCategories) {
+                if (cat.getActive() == null || cat.getActive()) {
+                    List<com.nguyendinhphuoccao.ecommerce.dto.product.ProductCategoryResponseDTO> prods = repository.findProductsByCategoryIdAndCustomerId(cat.getId(), customerId);
+                    topsList.addAll(prods.stream().limit(2).toList());
+                }
+            }
+            return topsList;
+        }
+
         com.nguyendinhphuoccao.ecommerce.entity.Category category = categoryRepository.findById(categoryId)
                 .orElseThrow(() -> new com.nguyendinhphuoccao.ecommerce.exception.ResourceNotFoundException("Category not found with id: " + categoryId));
         if (category.getActive() != null && !category.getActive()) {
