@@ -41,4 +41,10 @@ public class VariantOptionController {
     public ResponseEntity<List<VariantOption>> getAll() {
         return ResponseEntity.ok(service.getAll());
     }
+
+    @PostMapping("/generate-dummy")
+    public ResponseEntity<String> generateDummyVariants() {
+        service.generateDummyVariants();
+        return ResponseEntity.ok("Successfully generated dummy variants for all products without variants");
+    }
 }

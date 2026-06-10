@@ -2,6 +2,8 @@ package com.nguyendinhphuoccao.ecommerce.service.impl;
 
 import com.nguyendinhphuoccao.ecommerce.entity.VariantOption;
 import com.nguyendinhphuoccao.ecommerce.repository.VariantOptionRepository;
+import com.nguyendinhphuoccao.ecommerce.repository.ProductRepository;
+import com.nguyendinhphuoccao.ecommerce.entity.Product;
 import com.nguyendinhphuoccao.ecommerce.service.VariantOptionService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -16,6 +18,7 @@ import java.util.UUID;
 public class VariantOptionServiceImpl implements VariantOptionService {
 
     private final VariantOptionRepository repository;
+    private final ProductRepository productRepository;
 
     @Override
     public VariantOption create(VariantOption entity) {
@@ -46,5 +49,32 @@ public class VariantOptionServiceImpl implements VariantOptionService {
     @Transactional(readOnly = true)
     public List<VariantOption> getAll() {
         return repository.findAll();
+    }
+
+    @Override
+    @Transactional
+    public void generateDummyVariants() {
+        List<Product> products = productRepository.findAll();
+        for (Product product : products) {
+            List<VariantOption> existing = repository.findByProductId(product.getId());
+            if (existing == null || existing.isEmpty()) {
+                VariantOption var1 = VariantOption.builder()
+                        .product(product)
+                        .title("Size: M, Color: Black")
+                        .salePrice(product.getSalePrice() != null ? product.getSalePrice() : java.math.BigDecimal.valueOf(100))
+                        .quantity(100)
+                        .active(true)
+                        .build();
+                VariantOption var2 = VariantOption.builder()
+                        .product(product)
+                        .title("Size: L, Color: White")
+                        .salePrice(product.getSalePrice() != null ? product.getSalePrice() : java.math.BigDecimal.valueOf(100))
+                        .quantity(100)
+                        .active(true)
+                        .build();
+                repository.save(var1);
+                repository.save(var2);
+            }
+        }
     }
 }

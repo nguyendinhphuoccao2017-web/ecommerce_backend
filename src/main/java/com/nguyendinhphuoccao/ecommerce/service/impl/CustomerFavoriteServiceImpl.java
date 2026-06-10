@@ -130,4 +130,12 @@ public class CustomerFavoriteServiceImpl implements CustomerFavoriteService {
             customerFavoriteRepository.save(newFavorite);
         }
     }
+
+    @Override
+    @Transactional
+    public void clearMyFavorites() {
+        Customer customer = getCurrentCustomer();
+        List<CustomerFavorite> favorites = customerFavoriteRepository.findByCustomerId(customer.getId());
+        customerFavoriteRepository.deleteAll(favorites);
+    }
 }

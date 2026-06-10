@@ -10,4 +10,5 @@ public interface VariantOptionService {
     void delete(UUID id);
     VariantOption getById(UUID id);
     List<VariantOption> getAll();
+    void generateDummyVariants();
 }

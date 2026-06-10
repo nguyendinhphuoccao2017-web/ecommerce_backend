@@ -7,4 +7,5 @@ import java.util.UUID;
 public interface CustomerFavoriteService {
     List<com.nguyendinhphuoccao.ecommerce.dto.product.FavoriteResponseDTO> getFavoriteProducts();
     void toggleFavorite(UUID productId, com.nguyendinhphuoccao.ecommerce.dto.product.FavoriteToggleRequest request);
+    void clearMyFavorites();
 }

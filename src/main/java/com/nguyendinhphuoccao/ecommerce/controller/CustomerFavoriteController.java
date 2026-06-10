@@ -26,4 +26,10 @@ public class CustomerFavoriteController {
         service.toggleFavorite(productId, request);
         return ResponseEntity.ok().build();
     }
+
+    @DeleteMapping("/clear")
+    public ResponseEntity<Void> clearFavorites() {
+        service.clearMyFavorites();
+        return ResponseEntity.ok().build();
+    }
 }
