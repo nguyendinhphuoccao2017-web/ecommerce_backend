@@ -111,3 +111,10 @@ Tài liệu này lưu trữ lịch sử các chức năng đã làm, theo dõi c
     - **Hiển thị sản phẩm yêu thích**: Bổ sung JPQL `findFavoriteProductsByCustomerId` vào `ProductRepository` trả về List DTO các sản phẩm được `JOIN` với bảng `CustomerFavorite` và sắp xếp theo ngày Like (`createdAt DESC`). Khởi tạo API `GET /api/favorites`.
     - **Chức năng Toggle Favorite (Thêm/Xóa)**: Thiết kế API `POST /api/favorites/{productId}/toggle` cho phép Client gọi 1 chạm để Like/Unlike (Xóa bản ghi nếu đã có, tạo mới nếu chưa có).
     - **Sửa Lỗi Database 500**: Đã khắc phục lỗi `not-null property references a null value` bằng cách bổ sung annotation `@CreationTimestamp` cho thuộc tính `createdAt` tại entity `CustomerFavorite`.
+
+### 16. Tổng hợp Danh mục Ảo (Synthetic Category) "Tops"
+- **File:** `CategoryServiceImpl.java`, `ProductServiceImpl.java`, `SecurityConfig.java`
+- **Thay đổi & Mục đích:**
+    - **Tạo danh mục ảo Tops**: Bổ sung logic tại hàm `getAll()` của `CategoryServiceImpl` để tự động chèn thêm đối tượng `Category` mang tên "Tops" (với ID gán cứng `ffffffff-ffff-ffff-ffff-ffffffffffff`) vào danh sách danh mục trả về mà không cần lưu xuống DB.
+    - **Lấy sản phẩm gộp**: Tại `ProductServiceImpl.getProductsByCategory`, nhận diện ID đặc biệt của Tops để vòng lặp qua 10 danh mục hiện tại, trích xuất đúng 2 sản phẩm đầu tiên từ mỗi danh mục và gom lại thành danh sách 20 sản phẩm. Kỹ thuật này giúp Frontend nhẹ gánh đi 10 lần request gọi API, tối ưu hoá mượt mà cho Mobile.
+    - **Mở khóa Public GET API Categories**: Cập nhật `SecurityConfig` cho phép `GET /api/categories/**` truy cập công khai không cần truyền JWT Token.

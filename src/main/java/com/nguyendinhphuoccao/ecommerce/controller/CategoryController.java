@@ -46,7 +46,9 @@ public class CategoryController {
     }
 
     @GetMapping("/{id}/products")
-    public ResponseEntity<List<ProductCategoryResponseDTO>> getProductsByCategory(@PathVariable UUID id) {
-        return ResponseEntity.ok(productService.getProductsByCategory(id));
+    public ResponseEntity<List<ProductCategoryResponseDTO>> getProductsByCategory(
+            @PathVariable UUID id,
+            @RequestParam(required = false) String tagName) {
+        return ResponseEntity.ok(productService.getProductsByCategory(id, tagName));
     }
 }

@@ -201,9 +201,24 @@ public class ProductServiceImpl implements ProductService {
         return null;
     }
 
+    private void populateTags(List<com.nguyendinhphuoccao.ecommerce.dto.product.ProductCategoryResponseDTO> dtos) {
+        if (dtos == null || dtos.isEmpty()) return;
+        List<UUID> productIds = dtos.stream().map(com.nguyendinhphuoccao.ecommerce.dto.product.ProductCategoryResponseDTO::getId).toList();
+        List<Object[]> tagResults = tagRepository.findTagNamesByProductIds(productIds);
+        java.util.Map<UUID, java.util.List<String>> tagMap = new java.util.HashMap<>();
+        for (Object[] row : tagResults) {
+            UUID pId = (UUID) row[0];
+            String tName = (String) row[1];
+            tagMap.computeIfAbsent(pId, k -> new java.util.ArrayList<>()).add(tName);
+        }
+        for (com.nguyendinhphuoccao.ecommerce.dto.product.ProductCategoryResponseDTO dto : dtos) {
+            dto.setTags(tagMap.getOrDefault(dto.getId(), new java.util.ArrayList<>()));
+        }
+    }
+
     @Override
     @Transactional(readOnly = true)
-    public List<com.nguyendinhphuoccao.ecommerce.dto.product.ProductCategoryResponseDTO> getProductsByCategory(UUID categoryId) {
+    public List<com.nguyendinhphuoccao.ecommerce.dto.product.ProductCategoryResponseDTO> getProductsByCategory(UUID categoryId, String tagName) {
         UUID customerId = getCurrentCustomerId();
         
         if (categoryId.toString().equals("ffffffff-ffff-ffff-ffff-ffffffffffff")) {
@@ -211,10 +226,16 @@ public class ProductServiceImpl implements ProductService {
             List<com.nguyendinhphuoccao.ecommerce.entity.Category> allCategories = categoryRepository.findAll();
             for (com.nguyendinhphuoccao.ecommerce.entity.Category cat : allCategories) {
                 if (cat.getActive() == null || cat.getActive()) {
-                    List<com.nguyendinhphuoccao.ecommerce.dto.product.ProductCategoryResponseDTO> prods = repository.findProductsByCategoryIdAndCustomerId(cat.getId(), customerId);
+                    List<com.nguyendinhphuoccao.ecommerce.dto.product.ProductCategoryResponseDTO> prods;
+                    if (tagName != null && !tagName.trim().isEmpty()) {
+                        prods = repository.findProductsByCategoryIdAndTagAndCustomerId(cat.getId(), tagName, customerId);
+                    } else {
+                        prods = repository.findProductsByCategoryIdAndCustomerId(cat.getId(), customerId);
+                    }
                     topsList.addAll(prods.stream().limit(2).toList());
                 }
             }
+            populateTags(topsList);
             return topsList;
         }
 
@@ -223,6 +244,14 @@ public class ProductServiceImpl implements ProductService {
         if (category.getActive() != null && !category.getActive()) {
             throw new com.nguyendinhphuoccao.ecommerce.exception.ResourceNotFoundException("Category is inactive");
         }
-        return repository.findProductsByCategoryIdAndCustomerId(categoryId, customerId);
+        
+        List<com.nguyendinhphuoccao.ecommerce.dto.product.ProductCategoryResponseDTO> result;
+        if (tagName != null && !tagName.trim().isEmpty()) {
+            result = repository.findProductsByCategoryIdAndTagAndCustomerId(categoryId, tagName, customerId);
+        } else {
+            result = repository.findProductsByCategoryIdAndCustomerId(categoryId, customerId);
+        }
+        populateTags(result);
+        return result;
     }
 }
