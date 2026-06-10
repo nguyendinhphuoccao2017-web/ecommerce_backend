@@ -45,8 +45,17 @@ public class CustomerFavoriteServiceImpl implements CustomerFavoriteService {
         Customer customer = getCurrentCustomer();
         List<CustomerFavorite> favorites = customerFavoriteRepository.findByCustomerId(customer.getId());
         
-        List<com.nguyendinhphuoccao.ecommerce.dto.product.FavoriteResponseDTO> result = new java.util.ArrayList<>();
+        // Lọc trùng lặp (nếu có lỗi DB cũ) để đảm bảo mỗi sản phẩm chỉ xuất hiện 1 lần
+        java.util.Set<UUID> seenProductIds = new java.util.HashSet<>();
+        List<CustomerFavorite> uniqueFavorites = new java.util.ArrayList<>();
         for (CustomerFavorite fav : favorites) {
+            if (seenProductIds.add(fav.getProduct().getId())) {
+                uniqueFavorites.add(fav);
+            }
+        }
+        
+        List<com.nguyendinhphuoccao.ecommerce.dto.product.FavoriteResponseDTO> result = new java.util.ArrayList<>();
+        for (CustomerFavorite fav : uniqueFavorites) {
             Product product = fav.getProduct();
             
             Double avgRating = 0.0;
@@ -113,10 +122,11 @@ public class CustomerFavoriteServiceImpl implements CustomerFavoriteService {
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + productId));
 
-        Optional<CustomerFavorite> existingFavorite = customerFavoriteRepository.findByCustomerIdAndProductId(customer.getId(), productId);
+        List<CustomerFavorite> existingFavorites = customerFavoriteRepository.findByCustomerIdAndProductId(customer.getId(), productId);
         
-        if (existingFavorite.isPresent()) {
-            customerFavoriteRepository.delete(existingFavorite.get());
+        if (existingFavorites != null && !existingFavorites.isEmpty()) {
+            // Nếu đã tồn tại (dù 1 hay nhiều do lỗi data cũ), xóa sạch để đảm bảo không trùng lặp
+            customerFavoriteRepository.deleteAll(existingFavorites);
         } else {
             CustomerFavorite newFavorite = new CustomerFavorite();
             newFavorite.setCustomer(customer);
