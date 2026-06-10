@@ -22,6 +22,8 @@ public class ProductHomeResponseDTO {
     private Long totalReviews;
     private String placeholder;
     private String sku;
+    private Boolean isFavorite;
+    private java.util.List<String> tags;
 
     public ProductHomeResponseDTO(UUID id, String productName, BigDecimal salePrice, BigDecimal comparePrice, String thumbnailUrl, Double averageRating, Long totalReviews, String sku) {
         this.id = id;
@@ -33,5 +35,21 @@ public class ProductHomeResponseDTO {
         this.totalReviews = totalReviews;
         this.sku = sku;
         this.placeholder = null;
+        this.isFavorite = false;
+        this.tags = new java.util.ArrayList<>();
+    }
+
+    public ProductHomeResponseDTO(UUID id, String productName, BigDecimal salePrice, BigDecimal comparePrice, String thumbnailUrl, Double averageRating, Long totalReviews, String sku, Boolean isFavorite) {
+        this.id = id;
+        this.productName = productName;
+        this.salePrice = salePrice;
+        this.comparePrice = comparePrice;
+        this.thumbnailUrl = thumbnailUrl;
+        this.averageRating = averageRating;
+        this.totalReviews = totalReviews;
+        this.sku = sku;
+        this.placeholder = null;
+        this.isFavorite = isFavorite;
+        this.tags = new java.util.ArrayList<>();
     }
 }

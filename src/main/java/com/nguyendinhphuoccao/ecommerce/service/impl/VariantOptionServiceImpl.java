@@ -71,6 +71,7 @@ public class VariantOptionServiceImpl implements VariantOptionService {
                         .product(product)
                         .title(size)
                         .salePrice(product.getSalePrice() != null ? product.getSalePrice() : java.math.BigDecimal.valueOf(100))
+                        .comparePrice(product.getComparePrice())
                         .quantity(100)
                         .active(true)
                         .build();
@@ -87,6 +88,7 @@ public class VariantOptionServiceImpl implements VariantOptionService {
                             .title(colorName)
                             .image(gallery)
                             .salePrice(product.getSalePrice() != null ? product.getSalePrice() : java.math.BigDecimal.valueOf(100))
+                            .comparePrice(product.getComparePrice())
                             .quantity(100)
                             .active(true)
                             .build();

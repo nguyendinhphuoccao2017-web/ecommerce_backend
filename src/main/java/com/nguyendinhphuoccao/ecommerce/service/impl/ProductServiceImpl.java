@@ -186,7 +186,22 @@ public class ProductServiceImpl implements ProductService {
     @Override
     @Transactional(readOnly = true)
     public List<com.nguyendinhphuoccao.ecommerce.dto.product.ProductHomeResponseDTO> getProductsByTag(String tagName) {
-        return repository.findProductsByTagName(tagName);
+        UUID customerId = getCurrentCustomerId();
+        List<com.nguyendinhphuoccao.ecommerce.dto.product.ProductHomeResponseDTO> results = repository.findProductsByTagName(tagName, customerId);
+        if (!results.isEmpty()) {
+            List<UUID> productIds = results.stream().map(com.nguyendinhphuoccao.ecommerce.dto.product.ProductHomeResponseDTO::getId).toList();
+            List<Object[]> tagResults = tagRepository.findTagNamesByProductIds(productIds);
+            java.util.Map<UUID, java.util.List<String>> tagMap = new java.util.HashMap<>();
+            for (Object[] row : tagResults) {
+                UUID pId = (UUID) row[0];
+                String tName = (String) row[1];
+                tagMap.computeIfAbsent(pId, k -> new java.util.ArrayList<>()).add(tName);
+            }
+            for (com.nguyendinhphuoccao.ecommerce.dto.product.ProductHomeResponseDTO dto : results) {
+                dto.setTags(tagMap.getOrDefault(dto.getId(), new java.util.ArrayList<>()));
+            }
+        }
+        return results;
     }
 
     private UUID getCurrentCustomerId() {
