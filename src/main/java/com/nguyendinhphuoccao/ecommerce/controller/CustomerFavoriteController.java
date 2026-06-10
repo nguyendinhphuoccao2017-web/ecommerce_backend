@@ -17,13 +17,13 @@ public class CustomerFavoriteController {
     private final CustomerFavoriteService service;
 
     @GetMapping
-    public ResponseEntity<List<ProductCategoryResponseDTO>> getFavoriteProducts() {
+    public ResponseEntity<List<com.nguyendinhphuoccao.ecommerce.dto.product.FavoriteResponseDTO>> getFavoriteProducts() {
         return ResponseEntity.ok(service.getFavoriteProducts());
     }
 
     @PostMapping("/{productId}/toggle")
-    public ResponseEntity<Void> toggleFavorite(@PathVariable UUID productId) {
-        service.toggleFavorite(productId);
+    public ResponseEntity<Void> toggleFavorite(@PathVariable UUID productId, @RequestBody(required = false) com.nguyendinhphuoccao.ecommerce.dto.product.FavoriteToggleRequest request) {
+        service.toggleFavorite(productId, request);
         return ResponseEntity.ok().build();
     }
 }

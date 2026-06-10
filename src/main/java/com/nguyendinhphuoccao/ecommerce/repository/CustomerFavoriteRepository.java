@@ -11,4 +11,5 @@ import java.util.UUID;
 public interface CustomerFavoriteRepository extends JpaRepository<CustomerFavorite, UUID> {
     Optional<CustomerFavorite> findByCustomerIdAndProductId(UUID customerId, UUID productId);
     boolean existsByCustomerIdAndProductId(UUID customerId, UUID productId);
+    java.util.List<CustomerFavorite> findByCustomerId(UUID customerId);
 }

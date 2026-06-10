@@ -26,6 +26,7 @@ public class CustomerFavoriteServiceImpl implements CustomerFavoriteService {
 
     private final CustomerFavoriteRepository customerFavoriteRepository;
     private final ProductRepository productRepository;
+    private final com.nguyendinhphuoccao.ecommerce.repository.VariantOptionRepository variantOptionRepository;
 
     private Customer getCurrentCustomer() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -40,14 +41,74 @@ public class CustomerFavoriteServiceImpl implements CustomerFavoriteService {
 
     @Override
     @Transactional(readOnly = true)
-    public List<ProductCategoryResponseDTO> getFavoriteProducts() {
+    public List<com.nguyendinhphuoccao.ecommerce.dto.product.FavoriteResponseDTO> getFavoriteProducts() {
         Customer customer = getCurrentCustomer();
-        return productRepository.findFavoriteProductsByCustomerId(customer.getId());
+        List<CustomerFavorite> favorites = customerFavoriteRepository.findByCustomerId(customer.getId());
+        
+        List<com.nguyendinhphuoccao.ecommerce.dto.product.FavoriteResponseDTO> result = new java.util.ArrayList<>();
+        for (CustomerFavorite fav : favorites) {
+            Product product = fav.getProduct();
+            
+            Double avgRating = 0.0;
+            Long totalReviews = 0L;
+            if (product.getProductReviews() != null && !product.getProductReviews().isEmpty()) {
+                totalReviews = (long) product.getProductReviews().size();
+                avgRating = product.getProductReviews().stream()
+                        .mapToDouble(com.nguyendinhphuoccao.ecommerce.entity.ProductReview::getRating)
+                        .average().orElse(0.0);
+            }
+            
+            String thumbnailUrl = null;
+            if (product.getGalleries() != null) {
+                for (com.nguyendinhphuoccao.ecommerce.entity.Gallery g : product.getGalleries()) {
+                    if (g.getIsThumbnail() != null && g.getIsThumbnail()) {
+                        thumbnailUrl = g.getImage();
+                        break;
+                    }
+                }
+            }
+            
+            List<String> tagNames = new java.util.ArrayList<>();
+            if (product.getTags() != null) {
+                tagNames = product.getTags().stream().map(com.nguyendinhphuoccao.ecommerce.entity.Tag::getTagName).toList();
+            }
+            
+            java.math.BigDecimal salePrice = product.getSalePrice();
+            java.math.BigDecimal comparePrice = product.getComparePrice();
+            String variantTitle = null;
+            UUID variantOptionId = null;
+            
+            if (fav.getVariantOption() != null) {
+                salePrice = fav.getVariantOption().getSalePrice();
+                comparePrice = fav.getVariantOption().getComparePrice();
+                variantTitle = fav.getVariantOption().getTitle();
+                variantOptionId = fav.getVariantOption().getId();
+                if (fav.getVariantOption().getImage() != null) {
+                    thumbnailUrl = fav.getVariantOption().getImage().getImage();
+                }
+            }
+
+            result.add(com.nguyendinhphuoccao.ecommerce.dto.product.FavoriteResponseDTO.builder()
+                    .productId(product.getId())
+                    .productName(product.getProductName())
+                    .slug(product.getSlug())
+                    .salePrice(salePrice)
+                    .comparePrice(comparePrice)
+                    .thumbnailUrl(thumbnailUrl)
+                    .averageRating(avgRating)
+                    .totalReviews(totalReviews)
+                    .isFavorite(true)
+                    .tags(tagNames)
+                    .variantTitle(variantTitle)
+                    .variantOptionId(variantOptionId)
+                    .build());
+        }
+        return result;
     }
 
     @Override
     @Transactional
-    public void toggleFavorite(UUID productId) {
+    public void toggleFavorite(UUID productId, com.nguyendinhphuoccao.ecommerce.dto.product.FavoriteToggleRequest request) {
         Customer customer = getCurrentCustomer();
         Product product = productRepository.findById(productId)
                 .orElseThrow(() -> new ResourceNotFoundException("Product not found with id: " + productId));
@@ -60,6 +121,12 @@ public class CustomerFavoriteServiceImpl implements CustomerFavoriteService {
             CustomerFavorite newFavorite = new CustomerFavorite();
             newFavorite.setCustomer(customer);
             newFavorite.setProduct(product);
+            
+            if (request != null && request.getVariantOptionId() != null) {
+                com.nguyendinhphuoccao.ecommerce.entity.VariantOption variantOption = variantOptionRepository.findById(request.getVariantOptionId()).orElse(null);
+                newFavorite.setVariantOption(variantOption);
+            }
+            
             customerFavoriteRepository.save(newFavorite);
         }
     }

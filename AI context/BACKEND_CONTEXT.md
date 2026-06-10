@@ -63,5 +63,24 @@ Dưới đây là lịch sử các file cụ thể đã được thay đổi, ch
 *   **Nội dung cập nhật**: Bổ sung quy ước biến: `supabase.storage.base-url=https://nddvgywmwxlmkmextxre.supabase.co/storage/v1/object/public/product-images/`.
 *   **Mục đích cập nhật**: Khắc phục việc thiếu cấu hình môi trường. Cung cấp URL cơ sở (Base URL) cho Supabase Storage Bucket để Backend hoặc Frontend dễ dàng nối chuỗi với tên hình ảnh (`image.jfif`), nhằm hiển thị chính xác ảnh từ Cloud.
 
+### 2.7. Đồng bộ Logic Tags (Nhãn sản phẩm) với Frontend
+*   **File liên quan**: `ProductHomeResponseDTO.java`, `ProductCategoryResponseDTO.java`
+*   **Chức năng**: Dữ liệu Tag trả về từ API `/api/products/...`
+*   **Nội dung cập nhật / Trạng thái hiện tại**: Đã xác nhận mảng `tags` (chứa các chuỗi như `"New"`, `"Sale"`) trả về từ Backend đang trực tiếp điều khiển giao diện UI ở Frontend.
+*   **Mục đích**: Thay vì Frontend tự parse logic giảm giá hay kiểm tra biến cục bộ, Backend nay đóng vai trò "nguồn sự thật" (Source of Truth). Nếu Backend trả về Tag "New", Frontend sẽ tự động áp dụng logic hiển thị giá chuẩn (bỏ gạch ngang, hiển thị giá gốc màu đen). Nếu Backend trả về cả 2 Tag, Frontend sẽ tự động xếp chồng chúng lên nhau.
+
+### 2.8. Triển khai hoàn thiện module Yêu Thích (Favorites) kèm Biến thể (Variants)
+*   **File bị thay đổi**: 
+    *   `CustomerFavorite.java`, `CustomerFavoriteServiceImpl.java`
+    *   `ProductController.java`, `ProductServiceImpl.java`
+    *   `CustomerFavoriteController.java`
+*   **Chức năng**: Quản lý danh sách Yêu thích của người dùng trên App.
+*   **Nội dung cập nhật**:
+    *   Thêm khóa ngoại `@ManyToOne` đến `VariantOption` vào thực thể `CustomerFavorite` để lưu chính xác Size/Màu mà người dùng bấm thích.
+    *   Tạo API `GET /api/products/{id}/variants` trả về danh sách các Size/Màu để Frontend vẽ Bottom Sheet.
+    *   Cập nhật API `POST /api/favorites/{productId}/toggle` nhận Request Body là `variantOptionId`.
+    *   Tạo mới DTO `FavoriteResponseDTO` và cấu hình lại API `GET /api/favorites` trả về dữ liệu tuỳ chỉnh gồm có tên biến thể đã chọn (`variantTitle`), ảnh của biến thể, và giá bán riêng của biến thể đó.
+*   **Mục đích**: Phục vụ chính xác thiết kế Figma ở trang Danh sách Yêu Thích. Một sản phẩm khi được yêu thích bắt buộc phải lưu kèm lựa chọn (Ví dụ Size L), và UI hiển thị sẽ lấy giá tiền/hình ảnh của đúng Size L đó.
+
 ---
 *Ghi chú: Lịch sử trên ghi nhận trạng thái Backend tới thời điểm hiện tại. Khi có chức năng mới, vui lòng yêu cầu AI cập nhật tiếp vào file này.*

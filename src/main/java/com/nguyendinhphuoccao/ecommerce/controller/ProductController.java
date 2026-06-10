@@ -48,4 +48,9 @@ public class ProductController {
     public ResponseEntity<List<com.nguyendinhphuoccao.ecommerce.dto.product.ProductHomeResponseDTO>> getHomeProductsByTag(@PathVariable String tagName) {
         return ResponseEntity.ok(service.getProductsByTag(tagName));
     }
+
+    @GetMapping("/{id}/variants")
+    public ResponseEntity<List<com.nguyendinhphuoccao.ecommerce.dto.product.VariantOptionDTO>> getVariants(@PathVariable UUID id) {
+        return ResponseEntity.ok(service.getVariantsByProductId(id));
+    }
 }

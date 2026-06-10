@@ -28,6 +28,10 @@ public class CustomerFavorite {
     @JoinColumn(name = "product_id", nullable = false)
     private Product product;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "variant_option_id")
+    private VariantOption variantOption;
+
     @org.hibernate.annotations.CreationTimestamp
     @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;

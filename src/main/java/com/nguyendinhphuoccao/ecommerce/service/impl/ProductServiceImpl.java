@@ -25,6 +25,7 @@ public class ProductServiceImpl implements ProductService {
     private final ProductRepository repository;
     private final TagRepository tagRepository;
     private final com.nguyendinhphuoccao.ecommerce.repository.CategoryRepository categoryRepository;
+    private final com.nguyendinhphuoccao.ecommerce.repository.VariantOptionRepository variantOptionRepository;
 
     private StaffAccount getCurrentStaff() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -253,5 +254,21 @@ public class ProductServiceImpl implements ProductService {
         }
         populateTags(result);
         return result;
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<com.nguyendinhphuoccao.ecommerce.dto.product.VariantOptionDTO> getVariantsByProductId(UUID productId) {
+        return variantOptionRepository.findByProductId(productId).stream()
+            .filter(v -> v.getActive() == null || v.getActive())
+            .map(v -> com.nguyendinhphuoccao.ecommerce.dto.product.VariantOptionDTO.builder()
+                .id(v.getId())
+                .title(v.getTitle())
+                .salePrice(v.getSalePrice())
+                .comparePrice(v.getComparePrice())
+                .quantity(v.getQuantity())
+                .imageUrl(v.getImage() != null ? v.getImage().getImage() : null)
+                .build())
+            .toList();
     }
 }
