@@ -118,3 +118,17 @@ Tài liệu này lưu trữ lịch sử các chức năng đã làm, theo dõi c
     - **Tạo danh mục ảo Tops**: Bổ sung logic tại hàm `getAll()` của `CategoryServiceImpl` để tự động chèn thêm đối tượng `Category` mang tên "Tops" (với ID gán cứng `ffffffff-ffff-ffff-ffff-ffffffffffff`) vào danh sách danh mục trả về mà không cần lưu xuống DB.
     - **Lấy sản phẩm gộp**: Tại `ProductServiceImpl.getProductsByCategory`, nhận diện ID đặc biệt của Tops để vòng lặp qua 10 danh mục hiện tại, trích xuất đúng 2 sản phẩm đầu tiên từ mỗi danh mục và gom lại thành danh sách 20 sản phẩm. Kỹ thuật này giúp Frontend nhẹ gánh đi 10 lần request gọi API, tối ưu hoá mượt mà cho Mobile.
     - **Mở khóa Public GET API Categories**: Cập nhật `SecurityConfig` cho phép `GET /api/categories/**` truy cập công khai không cần truyền JWT Token.
+
+### 17. Tối Ưu N+1 Query Trang Yêu Thích & Ánh Xạ Biến Thể
+- **File:** `CustomerFavoriteRepository.java`, `CustomerFavoriteServiceImpl.java`, `FavoriteResponseDTO.java`
+- **Thay đổi & Mục đích:**
+    - **Custom Query JPQL (`findFavoriteProductsWithDetails`)**: Viết mới câu truy vấn trong Repository thay thế toàn bộ vòng lặp gọi lazy fetching (như lấy tags, reviews, galleries) bằng `LEFT JOIN` và gom nhóm trực tiếp, qua đó xoá bỏ triệt để lỗi N+1 Query. Tổng số truy vấn giảm từ hàng chục câu lệnh xuống đúng **2 câu lệnh SQL**.
+    - **Lấy giá & ảnh theo biến thể đã chọn**: Sử dụng hàm `COALESCE(vo.salePrice, p.salePrice)` và `COALESCE(vo.image.image, (MAX(g.image)))` thông qua `LEFT JOIN variant_options vo` để trả về chính xác giá bán và hình ảnh của Màu sắc/Size mà khách hàng đã bấm Like thay vì lấy chung của sản phẩm gốc.
+    - **Bảo Vệ NullPointerException**: Áp dụng `COALESCE(AVG(r.rating), 0.0)` khi bóc tách điểm đánh giá để ngăn lỗi API sập do sản phẩm chưa có Review.
+
+### 18. Khởi Tạo Data Seeder Cho Thuộc Tính Sản Phẩm (Color & Size)
+- **File:** `TestSeederController.java`
+- **Thay đổi & Mục đích:**
+    - Tạo endpoint `POST /api/test/seed-colors` nhằm hỗ trợ team test hệ thống Variant.
+    - **Dọn dẹp Data Rác**: API tự động `deleteAll()` các bản ghi yêu thích cũ để xoá bỏ lỗi liên kết khóa ngoại.
+    - **Mock Dữ Liệu Thuộc Tính**: Tự động sinh ra thuộc tính "Color" ("Black", "Red") và "Size" ("M") và móc nối trực tiếp tạo thành các cấu hình `VariantOption` cố định cho toàn bộ các sản phẩm đang có trong hệ thống, cung cấp cơ sở dữ liệu hoàn chỉnh để kiểm tra luồng chọn Size -> Bấm Yêu thích từ FE.

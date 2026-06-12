@@ -82,5 +82,11 @@ Dưới đây là lịch sử các file cụ thể đã được thay đổi, ch
     *   Tạo mới DTO `FavoriteResponseDTO` và cấu hình lại API `GET /api/favorites` trả về dữ liệu tuỳ chỉnh gồm có tên biến thể đã chọn (`variantTitle`), ảnh của biến thể, và giá bán riêng của biến thể đó.
 *   **Mục đích**: Phục vụ chính xác thiết kế Figma ở trang Danh sách Yêu Thích. Một sản phẩm khi được yêu thích bắt buộc phải lưu kèm lựa chọn (Ví dụ Size L), và UI hiển thị sẽ lấy giá tiền/hình ảnh của đúng Size L đó.
 
+### 2.9. Ánh xạ dữ liệu Color chính xác cho Sản Phẩm (Test Seeder)
+*   **File bị thay đổi**: `src/main/java/com/nguyendinhphuoccao/ecommerce/controller/TestSeederController.java`
+*   **Chức năng**: Cung cấp API nội bộ (`GET /api/test/seed-colors`) để tự động gán dữ liệu biến thể giả lập (Variant Option: Size & Color) vào Database phục vụ cho việc test Frontend.
+*   **Nội dung cập nhật**: Xóa bỏ logic random gán màu Black/Red sơ sài trước đây. Xây dựng logic mapping màu sắc chính xác (White, Blue, Brown, Scarlet, Cream...) dựa trên `productName` cho tất cả các sản phẩm thông qua đối chiếu thiết kế trong file PDF (`Một số điểm cần sửa.pdf`) và file JSON thực tế từ DB.
+*   **Mục đích**: Đảm bảo Bottom Sheet ở Frontend hiện ra đúng màu của sản phẩm thay vì các màu mặc định sai lệch, nâng cao tính chính xác của dữ liệu được giao tiếp giữa FE và BE khi người dùng thêm sản phẩm vào Yêu thích.
+
 ---
 *Ghi chú: Lịch sử trên ghi nhận trạng thái Backend tới thời điểm hiện tại. Khi có chức năng mới, vui lòng yêu cầu AI cập nhật tiếp vào file này.*

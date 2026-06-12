@@ -23,4 +23,18 @@ public class FavoriteResponseDTO {
     private List<String> tags;
     private String variantTitle;
     private UUID variantOptionId;
+
+    public FavoriteResponseDTO(UUID productId, String productName, String slug, BigDecimal salePrice, BigDecimal comparePrice, String thumbnailUrl, Double averageRating, Long totalReviews, Boolean isFavorite, String variantTitle, UUID variantOptionId) {
+        this.productId = productId;
+        this.productName = productName;
+        this.slug = slug;
+        this.salePrice = salePrice;
+        this.comparePrice = comparePrice;
+        this.thumbnailUrl = thumbnailUrl;
+        this.averageRating = averageRating;
+        this.totalReviews = totalReviews;
+        this.isFavorite = isFavorite;
+        this.variantTitle = variantTitle;
+        this.variantOptionId = variantOptionId;
+    }
 }

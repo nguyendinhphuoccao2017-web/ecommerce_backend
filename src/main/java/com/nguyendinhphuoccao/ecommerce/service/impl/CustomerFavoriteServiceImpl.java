@@ -27,6 +27,7 @@ public class CustomerFavoriteServiceImpl implements CustomerFavoriteService {
     private final CustomerFavoriteRepository customerFavoriteRepository;
     private final ProductRepository productRepository;
     private final com.nguyendinhphuoccao.ecommerce.repository.VariantOptionRepository variantOptionRepository;
+    private final com.nguyendinhphuoccao.ecommerce.repository.TagRepository tagRepository;
 
     private Customer getCurrentCustomer() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -43,76 +44,29 @@ public class CustomerFavoriteServiceImpl implements CustomerFavoriteService {
     @Transactional(readOnly = true)
     public List<com.nguyendinhphuoccao.ecommerce.dto.product.FavoriteResponseDTO> getFavoriteProducts() {
         Customer customer = getCurrentCustomer();
-        List<CustomerFavorite> favorites = customerFavoriteRepository.findByCustomerId(customer.getId());
-        
-        // Lọc trùng lặp (nếu có lỗi DB cũ) để đảm bảo mỗi sản phẩm chỉ xuất hiện 1 lần
-        java.util.Set<UUID> seenProductIds = new java.util.HashSet<>();
-        List<CustomerFavorite> uniqueFavorites = new java.util.ArrayList<>();
-        for (CustomerFavorite fav : favorites) {
-            if (seenProductIds.add(fav.getProduct().getId())) {
-                uniqueFavorites.add(fav);
-            }
-        }
-        
-        List<com.nguyendinhphuoccao.ecommerce.dto.product.FavoriteResponseDTO> result = new java.util.ArrayList<>();
-        for (CustomerFavorite fav : uniqueFavorites) {
-            Product product = fav.getProduct();
-            
-            Double avgRating = 0.0;
-            Long totalReviews = 0L;
-            if (product.getProductReviews() != null && !product.getProductReviews().isEmpty()) {
-                totalReviews = (long) product.getProductReviews().size();
-                avgRating = product.getProductReviews().stream()
-                        .mapToDouble(com.nguyendinhphuoccao.ecommerce.entity.ProductReview::getRating)
-                        .average().orElse(0.0);
-            }
-            
-            String thumbnailUrl = null;
-            if (product.getGalleries() != null) {
-                for (com.nguyendinhphuoccao.ecommerce.entity.Gallery g : product.getGalleries()) {
-                    if (g.getIsThumbnail() != null && g.getIsThumbnail()) {
-                        thumbnailUrl = g.getImage();
-                        break;
-                    }
-                }
-            }
-            
-            List<String> tagNames = new java.util.ArrayList<>();
-            if (product.getTags() != null) {
-                tagNames = product.getTags().stream().map(com.nguyendinhphuoccao.ecommerce.entity.Tag::getTagName).toList();
-            }
-            
-            java.math.BigDecimal salePrice = product.getSalePrice();
-            java.math.BigDecimal comparePrice = product.getComparePrice();
-            String variantTitle = null;
-            UUID variantOptionId = null;
-            
-            if (fav.getVariantOption() != null) {
-                salePrice = fav.getVariantOption().getSalePrice();
-                comparePrice = fav.getVariantOption().getComparePrice();
-                variantTitle = fav.getVariantOption().getTitle();
-                variantOptionId = fav.getVariantOption().getId();
-                if (fav.getVariantOption().getImage() != null) {
-                    thumbnailUrl = fav.getVariantOption().getImage().getImage();
-                }
-            }
+        List<com.nguyendinhphuoccao.ecommerce.dto.product.FavoriteResponseDTO> favorites = customerFavoriteRepository.findFavoriteProductsWithDetails(customer.getId());
 
-            result.add(com.nguyendinhphuoccao.ecommerce.dto.product.FavoriteResponseDTO.builder()
-                    .productId(product.getId())
-                    .productName(product.getProductName())
-                    .slug(product.getSlug())
-                    .salePrice(salePrice)
-                    .comparePrice(comparePrice)
-                    .thumbnailUrl(thumbnailUrl)
-                    .averageRating(avgRating)
-                    .totalReviews(totalReviews)
-                    .isFavorite(true)
-                    .tags(tagNames)
-                    .variantTitle(variantTitle)
-                    .variantOptionId(variantOptionId)
-                    .build());
+        if (favorites.isEmpty()) {
+            return favorites;
         }
-        return result;
+
+        List<UUID> productIds = favorites.stream()
+                .map(com.nguyendinhphuoccao.ecommerce.dto.product.FavoriteResponseDTO::getProductId)
+                .toList();
+
+        List<Object[]> tagsResult = tagRepository.findTagNamesByProductIds(productIds);
+        java.util.Map<UUID, List<String>> productTagsMap = new java.util.HashMap<>();
+        for (Object[] row : tagsResult) {
+            UUID pId = (UUID) row[0];
+            String tagName = (String) row[1];
+            productTagsMap.computeIfAbsent(pId, k -> new java.util.ArrayList<>()).add(tagName);
+        }
+
+        for (com.nguyendinhphuoccao.ecommerce.dto.product.FavoriteResponseDTO dto : favorites) {
+            dto.setTags(productTagsMap.getOrDefault(dto.getProductId(), new java.util.ArrayList<>()));
+        }
+
+        return favorites;
     }
 
     @Override
