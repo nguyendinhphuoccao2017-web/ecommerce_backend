@@ -21,8 +21,9 @@ public class ProductCategoryResponseDTO {
     private Long totalReviews;
     private Boolean isFavorite;
     private List<String> tags;
+    private String sku;
 
-    public ProductCategoryResponseDTO(UUID id, String productName, String slug, BigDecimal salePrice, BigDecimal comparePrice, String thumbnailUrl, Double averageRating, Long totalReviews, Boolean isFavorite) {
+    public ProductCategoryResponseDTO(UUID id, String productName, String slug, BigDecimal salePrice, BigDecimal comparePrice, String thumbnailUrl, Double averageRating, Long totalReviews, Boolean isFavorite, String sku) {
         this.id = id;
         this.productName = productName;
         this.slug = slug;
@@ -32,6 +33,7 @@ public class ProductCategoryResponseDTO {
         this.averageRating = averageRating != null ? averageRating : 0.0;
         this.totalReviews = totalReviews != null ? totalReviews : 0L;
         this.isFavorite = isFavorite != null ? isFavorite : false;
+        this.sku = sku;
         this.tags = new java.util.ArrayList<>();
     }
 }

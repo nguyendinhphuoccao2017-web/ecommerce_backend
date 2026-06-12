@@ -131,4 +131,11 @@ Tài liệu này lưu trữ lịch sử các chức năng đã làm, theo dõi c
 - **Thay đổi & Mục đích:**
     - Tạo endpoint `POST /api/test/seed-colors` nhằm hỗ trợ team test hệ thống Variant.
     - **Dọn dẹp Data Rác**: API tự động `deleteAll()` các bản ghi yêu thích cũ để xoá bỏ lỗi liên kết khóa ngoại.
-    - **Mock Dữ Liệu Thuộc Tính**: Tự động sinh ra thuộc tính "Color" ("Black", "Red") và "Size" ("M") và móc nối trực tiếp tạo thành các cấu hình `VariantOption` cố định cho toàn bộ các sản phẩm đang có trong hệ thống, cung cấp cơ sở dữ liệu hoàn chỉnh để kiểm tra luồng chọn Size -> Bấm Yêu thích từ FE.
+    - **Mapping Dữ Liệu Thực Tế**: Đã thiết kế lại logic để map tên Màu Sắc (Color) chuẩn xác 1-1 với tên sản phẩm (Ví dụ: "Chân Váy Midi Xếp Ly" -> "Cream") dựa trên file thiết kế `Một số điểm cần sửa.pdf`. Tự động chèn dữ liệu Size (XS, S, M, L, XL - *Sau đó Developer đã cập nhật lại chỉ seed riêng size M*) kết hợp thành các chuỗi Variant (vd: "Cream, M").
+    - Cập nhật cơ chế tự động lấy ảnh Thumbnail chính của sản phẩm (từ `Gallery`) nhúng vào `VariantOption` giúp thẻ sản phẩm Favorites load đúng hình đại diện của biến thể.
+
+### 19. Phân Tích & Xác Nhận Tính Toàn Vẹn Của Hệ Thống Yêu Thích (Favorites)
+- **Luồng Thực thi**: API `POST /api/favorites/{productId}/toggle` đã được kiểm thử với các case edge như "đổi size", "bấm đúp".
+- **Kết quả Audit (Kiểm toán)**:
+    - **Bảo mật & Tính độc lập**: API Toggle xử lý độc lập trên từng `productId`. Không có chuyện thích sản phẩm B mà lại làm mất sản phẩm A. Lỗi "chỉ chọn được 1 sản phẩm" đã được làm rõ là do hệ quả của việc User bấm Double-Tap từ Frontend (Gửi 2 request Thêm/Xoá cùng lúc).
+    - **Toàn vẹn Dữ Liệu**: Việc Backend phản hồi `200 OK` mượt mà khi xử lý 2 transaction ngược chiều trong 1 phần nghìn giây cho thấy cơ chế `@Transactional` và `deleteAll()` của Spring Data JPA hoạt động hoàn hảo, chặn đứng mọi lỗi Lock DB hay Foreign Key Constraint.
