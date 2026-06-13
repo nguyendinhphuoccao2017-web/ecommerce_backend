@@ -26,6 +26,8 @@ public class ProductServiceImpl implements ProductService {
     private final TagRepository tagRepository;
     private final com.nguyendinhphuoccao.ecommerce.repository.CategoryRepository categoryRepository;
     private final com.nguyendinhphuoccao.ecommerce.repository.VariantOptionRepository variantOptionRepository;
+    private final com.nguyendinhphuoccao.ecommerce.repository.CustomerFavoriteRepository customerFavoriteRepository;
+    private final com.nguyendinhphuoccao.ecommerce.repository.CardItemRepository cardItemRepository;
 
     private StaffAccount getCurrentStaff() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -285,5 +287,95 @@ public class ProductServiceImpl implements ProductService {
                 .imageUrl(v.getImage() != null ? v.getImage().getImage() : null)
                 .build())
             .toList();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public com.nguyendinhphuoccao.ecommerce.dto.product.ProductDetailResponseDTO getProductDetails(UUID id) {
+        Product product = repository.findById(id).orElseThrow(() -> new com.nguyendinhphuoccao.ecommerce.exception.ResourceNotFoundException("Product not found"));
+        
+        UUID customerId = getCurrentCustomerId();
+        boolean isFavorite = false;
+        int cartQuantity = 0;
+        
+        if (customerId != null) {
+            isFavorite = customerFavoriteRepository.existsByCustomerIdAndProductId(customerId, id);
+            Integer sum = cardItemRepository.sumQuantityByCustomerAndProduct(customerId, id);
+            if (sum != null) {
+                cartQuantity = sum;
+            }
+        }
+
+        List<String> tags = new java.util.ArrayList<>();
+        List<Object[]> tagResults = tagRepository.findTagNamesByProductIds(java.util.List.of(id));
+        for (Object[] row : tagResults) {
+            tags.add((String) row[1]);
+        }
+
+        double avgRating = 0.0;
+        long totalReviews = 0;
+        if (product.getProductReviews() != null && !product.getProductReviews().isEmpty()) {
+            List<com.nguyendinhphuoccao.ecommerce.entity.ProductReview> pubReviews = product.getProductReviews().stream().filter(r -> r.getPublished() != null && r.getPublished()).toList();
+            totalReviews = pubReviews.size();
+            if (totalReviews > 0) {
+                avgRating = pubReviews.stream().mapToDouble(com.nguyendinhphuoccao.ecommerce.entity.ProductReview::getRating).average().orElse(0.0);
+            }
+        }
+
+        List<String> galleryUrls = new java.util.ArrayList<>();
+        if (product.getGalleries() != null) {
+            galleryUrls = product.getGalleries().stream()
+                .map(com.nguyendinhphuoccao.ecommerce.entity.Gallery::getImage)
+                .toList();
+        }
+
+        return com.nguyendinhphuoccao.ecommerce.dto.product.ProductDetailResponseDTO.builder()
+                .id(product.getId())
+                .productName(product.getProductName())
+                .sku(product.getSku())
+                .salePrice(product.getSalePrice())
+                .comparePrice(product.getComparePrice())
+                .averageRating(avgRating)
+                .totalReviews(totalReviews)
+                .shortDescription(product.getShortDescription())
+                .productDescription(product.getProductDescription())
+                .isFavorite(isFavorite)
+                .galleries(galleryUrls)
+                .tags(tags)
+                .cartQuantity(cartQuantity)
+                .build();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<com.nguyendinhphuoccao.ecommerce.dto.product.ProductHomeResponseDTO> getRelatedProducts(UUID productId) {
+        Product product = repository.findById(productId).orElseThrow(() -> new com.nguyendinhphuoccao.ecommerce.exception.ResourceNotFoundException("Product not found"));
+        UUID customerId = getCurrentCustomerId();
+        
+        if (product.getProductCategories() != null && !product.getProductCategories().isEmpty()) {
+            UUID categoryId = product.getProductCategories().get(0).getCategory().getId();
+            // Get products by category, which returns ProductCategoryResponseDTO
+            List<com.nguyendinhphuoccao.ecommerce.dto.product.ProductCategoryResponseDTO> catProducts = repository.findProductsByCategoryIdAndCustomerId(categoryId, customerId);
+            populateTags(catProducts);
+            
+            // Map to ProductHomeResponseDTO and exclude current product
+            return catProducts.stream()
+                .filter(p -> !p.getId().equals(productId))
+                .limit(10) // Limit related products to 10
+                .map(p -> com.nguyendinhphuoccao.ecommerce.dto.product.ProductHomeResponseDTO.builder()
+                    .id(p.getId())
+                    .productName(p.getProductName())
+                    .sku(p.getSku())
+                    .salePrice(p.getSalePrice())
+                    .comparePrice(p.getComparePrice())
+                    .thumbnailUrl(p.getThumbnailUrl())
+                    .averageRating(p.getAverageRating())
+                    .totalReviews(p.getTotalReviews())
+                    .isFavorite(p.getIsFavorite())
+                    .tags(p.getTags())
+                    .build())
+                .collect(java.util.stream.Collectors.toList());
+        }
+        return new java.util.ArrayList<>();
     }
 }

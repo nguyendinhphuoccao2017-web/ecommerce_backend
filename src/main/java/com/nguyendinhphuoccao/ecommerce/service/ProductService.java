@@ -15,4 +15,6 @@ public interface ProductService {
     List<com.nguyendinhphuoccao.ecommerce.dto.product.ProductHomeResponseDTO> getProductsByTag(String tagName);
     List<com.nguyendinhphuoccao.ecommerce.dto.product.ProductCategoryResponseDTO> getProductsByCategory(UUID categoryId, String tagName);
     List<com.nguyendinhphuoccao.ecommerce.dto.product.VariantOptionDTO> getVariantsByProductId(UUID productId);
+    com.nguyendinhphuoccao.ecommerce.dto.product.ProductDetailResponseDTO getProductDetails(UUID id);
+    List<com.nguyendinhphuoccao.ecommerce.dto.product.ProductHomeResponseDTO> getRelatedProducts(UUID productId);
 }

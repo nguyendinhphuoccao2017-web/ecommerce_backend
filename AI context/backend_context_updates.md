@@ -139,3 +139,10 @@ Tài liệu này lưu trữ lịch sử các chức năng đã làm, theo dõi c
 - **Kết quả Audit (Kiểm toán)**:
     - **Bảo mật & Tính độc lập**: API Toggle xử lý độc lập trên từng `productId`. Không có chuyện thích sản phẩm B mà lại làm mất sản phẩm A. Lỗi "chỉ chọn được 1 sản phẩm" đã được làm rõ là do hệ quả của việc User bấm Double-Tap từ Frontend (Gửi 2 request Thêm/Xoá cùng lúc).
     - **Toàn vẹn Dữ Liệu**: Việc Backend phản hồi `200 OK` mượt mà khi xử lý 2 transaction ngược chiều trong 1 phần nghìn giây cho thấy cơ chế `@Transactional` và `deleteAll()` của Spring Data JPA hoạt động hoàn hảo, chặn đứng mọi lỗi Lock DB hay Foreign Key Constraint.
+
+### 20. Bổ Sung Dữ Liệu SKU Vào API Để Đồng Bộ UI Frontend
+- **File:** `ProductCategoryResponseDTO.java`, `FavoriteResponseDTO.java`, `ProductRepository.java`, `CustomerFavoriteRepository.java`
+- **Thay đổi & Mục đích:**
+    - Thay vì truyền cứng chữ "Brand" ở các thẻ sản phẩm trên giao diện, Backend đã được cập nhật để trực tiếp gửi dữ liệu mã `sku` từ Database lên cho Client ở toàn bộ các endpoint (Shop, Favorites).
+    - Các đối tượng DTO `ProductCategoryResponseDTO` và `FavoriteResponseDTO` được khai báo thêm biến `String sku`.
+    - Tái cấu trúc lại các câu JPQL `@Query` (cụ thể là `findProductsByCategoryIdAndCustomerId`, `findProductsByCategoryIdAndTagAndCustomerId`, `findFavoriteProductsByCustomerId`, `findFavoriteProductsWithDetails`) bằng cách gắn thêm `p.sku` vào cả mệnh đề `SELECT` lẫn `GROUP BY`.

@@ -21,6 +21,7 @@ public class FavoriteResponseDTO {
     private Long totalReviews;
     private Boolean isFavorite;
     private List<String> tags;
+    private List<String> categories;
     private String variantTitle;
     private UUID variantOptionId;
     private String sku;

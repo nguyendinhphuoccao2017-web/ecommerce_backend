@@ -8,4 +8,7 @@ import java.util.UUID;
 @Repository
 public interface CategoryRepository extends JpaRepository<Category, UUID> {
     java.util.Optional<Category> findByCategoryName(String categoryName);
+
+    @org.springframework.data.jpa.repository.Query("SELECT pc.product.id, c.categoryName FROM Category c JOIN c.productCategories pc WHERE pc.product.id IN :productIds")
+    java.util.List<Object[]> findCategoryNamesByProductIds(@org.springframework.data.repository.query.Param("productIds") java.util.List<UUID> productIds);
 }

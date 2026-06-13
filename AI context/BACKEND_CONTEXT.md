@@ -88,5 +88,14 @@ Dưới đây là lịch sử các file cụ thể đã được thay đổi, ch
 *   **Nội dung cập nhật**: Xóa bỏ logic random gán màu Black/Red sơ sài trước đây. Xây dựng logic mapping màu sắc chính xác (White, Blue, Brown, Scarlet, Cream...) dựa trên `productName` cho tất cả các sản phẩm thông qua đối chiếu thiết kế trong file PDF (`Một số điểm cần sửa.pdf`) và file JSON thực tế từ DB.
 *   **Mục đích**: Đảm bảo Bottom Sheet ở Frontend hiện ra đúng màu của sản phẩm thay vì các màu mặc định sai lệch, nâng cao tính chính xác của dữ liệu được giao tiếp giữa FE và BE khi người dùng thêm sản phẩm vào Yêu thích.
 
+### 2.10. Hiển thị Category cho sản phẩm Yêu thích (Favorite Categories)
+*   **File bị thay đổi**: 
+    *   `FavoriteResponseDTO.java`
+    *   `CategoryRepository.java`
+    *   `CustomerFavoriteServiceImpl.java`
+*   **Chức năng**: Cung cấp dữ liệu danh mục của các sản phẩm nằm trong danh sách Yêu thích.
+*   **Nội dung cập nhật**: Bổ sung mảng `categories` vào `FavoriteResponseDTO`. Viết thêm câu truy vấn `findCategoryNamesByProductIds` trong `CategoryRepository` và gọi hàm này trong `CustomerFavoriteServiceImpl` để gán danh sách danh mục tương ứng cho từng sản phẩm yêu thích trước khi trả về cho Frontend.
+*   **Mục đích**: Đáp ứng thiết kế giao diện Figma ở màn hình Yêu thích, nơi các viên thuốc (Pills) phân loại sản phẩm phải hiển thị dựa trên danh mục (Category) thay vì nhãn (Tags) như trước đây.
+
 ---
 *Ghi chú: Lịch sử trên ghi nhận trạng thái Backend tới thời điểm hiện tại. Khi có chức năng mới, vui lòng yêu cầu AI cập nhật tiếp vào file này.*

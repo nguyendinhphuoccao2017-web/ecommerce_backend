@@ -28,6 +28,7 @@ public class CustomerFavoriteServiceImpl implements CustomerFavoriteService {
     private final ProductRepository productRepository;
     private final com.nguyendinhphuoccao.ecommerce.repository.VariantOptionRepository variantOptionRepository;
     private final com.nguyendinhphuoccao.ecommerce.repository.TagRepository tagRepository;
+    private final com.nguyendinhphuoccao.ecommerce.repository.CategoryRepository categoryRepository;
 
     private Customer getCurrentCustomer() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -62,8 +63,17 @@ public class CustomerFavoriteServiceImpl implements CustomerFavoriteService {
             productTagsMap.computeIfAbsent(pId, k -> new java.util.ArrayList<>()).add(tagName);
         }
 
+        List<Object[]> categoriesResult = categoryRepository.findCategoryNamesByProductIds(productIds);
+        java.util.Map<UUID, List<String>> productCategoriesMap = new java.util.HashMap<>();
+        for (Object[] row : categoriesResult) {
+            UUID pId = (UUID) row[0];
+            String catName = (String) row[1];
+            productCategoriesMap.computeIfAbsent(pId, k -> new java.util.ArrayList<>()).add(catName);
+        }
+
         for (com.nguyendinhphuoccao.ecommerce.dto.product.FavoriteResponseDTO dto : favorites) {
             dto.setTags(productTagsMap.getOrDefault(dto.getProductId(), new java.util.ArrayList<>()));
+            dto.setCategories(productCategoriesMap.getOrDefault(dto.getProductId(), new java.util.ArrayList<>()));
         }
 
         return favorites;

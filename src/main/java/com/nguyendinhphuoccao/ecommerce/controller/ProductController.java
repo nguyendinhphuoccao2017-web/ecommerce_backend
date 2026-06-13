@@ -53,4 +53,14 @@ public class ProductController {
     public ResponseEntity<List<com.nguyendinhphuoccao.ecommerce.dto.product.VariantOptionDTO>> getVariants(@PathVariable UUID id) {
         return ResponseEntity.ok(service.getVariantsByProductId(id));
     }
+
+    @GetMapping("/{id}/details")
+    public ResponseEntity<com.nguyendinhphuoccao.ecommerce.dto.product.ProductDetailResponseDTO> getDetails(@PathVariable UUID id) {
+        return ResponseEntity.ok(service.getProductDetails(id));
+    }
+
+    @GetMapping("/{id}/related")
+    public ResponseEntity<List<com.nguyendinhphuoccao.ecommerce.dto.product.ProductHomeResponseDTO>> getRelatedProducts(@PathVariable UUID id) {
+        return ResponseEntity.ok(service.getRelatedProducts(id));
+    }
 }
