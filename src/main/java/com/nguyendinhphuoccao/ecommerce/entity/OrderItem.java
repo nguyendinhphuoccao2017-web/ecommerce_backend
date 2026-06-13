@@ -2,7 +2,6 @@ package com.nguyendinhphuoccao.ecommerce.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
-import org.hibernate.annotations.GenericGenerator;
 import java.math.BigDecimal;
 import java.util.UUID;
 
@@ -15,8 +14,7 @@ import java.util.UUID;
 @Builder
 public class OrderItem {
     @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
+    @GeneratedValue(strategy = GenerationType.UUID)
     @Column(name = "id", updatable = false, nullable = false)
     private UUID id;
 
