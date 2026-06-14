@@ -11,7 +11,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
-import java.util.List;
+import java.util.List;import java.util.Map;
+import java.util.HashMap;
 
 @RestController
 @RequestMapping("/api/test")
@@ -223,5 +224,103 @@ public class TestSeederController {
                     v.setAttributeValue(colorStr);
                     return attributeValueRepository.save(v);
                 });
+    }
+
+    @PostMapping("/update-descriptions")
+    @Transactional
+    public ResponseEntity<String> updateProductDescriptions() {
+        // 1. Alter the short_description column to TEXT to accommodate 200 words
+        try {
+            jdbcTemplate.execute("ALTER TABLE products ALTER COLUMN short_description TYPE TEXT");
+        } catch (Exception e) {
+            // Ignore if it already changed
+            System.out.println("Alter table failed or already applied: " + e.getMessage());
+        }
+
+        // 2. Fetch all products
+        List<Product> products = productRepository.findAll();
+        Map<String, String> translationMap = getTranslationMap();
+
+        for (Product p : products) {
+            String englishName = translationMap.getOrDefault(p.getProductName(), p.getProductName() + " (English)");
+            
+            p.setProductName(englishName);
+            p.setShortDescription(generateShortDescription(englishName));
+            p.setProductDescription(generateLongDescription(englishName));
+            
+            productRepository.save(p);
+        }
+
+        return ResponseEntity.ok("Successfully updated all product names to English and generated 200/500-word descriptions.");
+    }
+
+    private Map<String, String> getTranslationMap() {
+        Map<String, String> map = new HashMap<>();
+        map.put("Chân Váy Midi Xếp Ly", "Pleated Midi Skirt");
+        map.put("Đầm Body Cổ V Gợi Cảm", "Sexy V-Neck Bodycon Dress");
+        map.put("Áo Dệt Kim Tay Ngắn", "Short Sleeve Knit Top");
+        map.put("Váy Xòe Họa Tiết Hoa Nhí", "Floral Flared Dress");
+        map.put("Đầm Maxi Trễ Vai Đi Biển", "Off-Shoulder Beach Maxi Dress");
+        map.put("Blazer Ngắn Tay Mùa Hè", "Summer Short Sleeve Blazer");
+        map.put("Áo Khoác Blazer Kaki", "Khaki Blazer Jacket");
+        map.put("Váy Sơ Mi Thắt Eo", "Tie-Waist Shirt Dress");
+        map.put("Áo Phao Dáng Ngắn", "Short Puffer Jacket");
+        map.put("Áo Cardigan Len Thừng", "Cable Knit Cardigan");
+        map.put("Áo Sơ Mi Lụa Cổ V", "V-Neck Silk Shirt");
+        map.put("Quần Tây Công Sở Dáng Đứng", "Straight Leg Office Trousers");
+        map.put("Quần Ống Suông Vải Mềm", "Soft Wide Leg Pants");
+        map.put("Quần Shorts Jeans Gấu Tua Rua", "Fringed Denim Shorts");
+        map.put("Quần Jeans Skinny Xanh Đậm", "Dark Blue Skinny Jeans");
+        map.put("Áo Măng Tô Kaki", "Khaki Trench Coat");
+        map.put("Chân Váy Jean Ngắn", "Short Denim Skirt");
+        map.put("Blazer Kẻ Caro Trẻ Trung", "Youthful Plaid Blazer");
+        map.put("Áo Khoác Len Mỏng Mùa Thu", "Thin Autumn Cardigan");
+        map.put("Áo Blazer Pastel Dáng Suông", "Loose Pastel Blazer");
+        map.put("Áo Sơ Mi Trắng Basic", "Basic White Shirt");
+        map.put("Quần Short Kaki Cơ Bản", "Basic Khaki Shorts");
+        map.put("Áo Len Gân Cổ V", "Ribbed V-Neck Sweater");
+        map.put("Quần Jeans Ống Loe Retro", "Retro Flare Jeans");
+        map.put("Chân Váy Hoa Nhí Dáng Dài", "Long Floral Skirt");
+        map.put("Áo Khoác Da Biker", "Biker Leather Jacket");
+        map.put("Đầm Dệt Kim Ôm Body", "Knit Bodycon Dress");
+        map.put("Quần Giả Váy Xếp Ly", "Pleated Skort");
+        map.put("Quần Thể Thao Jogger", "Sporty Jogger Pants");
+        map.put("Quần Kaki Nữ Năng Động", "Dynamic Women's Khaki Pants");
+        map.put("Quần Baggy Lưng Cao", "High-Waisted Baggy Pants");
+        map.put("Áo Khoác Bomber Năng Động", "Dynamic Bomber Jacket");
+        map.put("Quần Short Vải Linen Mùa Hè", "Summer Linen Shorts");
+        map.put("Áo Blouse Công Sở Tay Bồng", "Puff Sleeve Office Blouse");
+        map.put("Áo Cardigan Dáng Dài", "Long Cardigan");
+        map.put("Quần Jeans Rách Phá Cách", "Distressed Jeans");
+        map.put("Đầm Dự Tiệc Dáng Dài Xẻ Tà", "Slit Long Party Dress");
+        map.put("Áo Khoác Dệt Kim Cài Nút", "Button-Up Knit Jacket");
+        map.put("Quần Mom Jeans Lưng Cao", "High-Waisted Mom Jeans");
+        map.put("Chân Váy Chữ A Công Sở", "A-Line Office Skirt");
+        map.put("Quần Short Thể Thao Cotton", "Cotton Sport Shorts");
+        map.put("Áo Sơ Mi Kẻ Sọc Form Rộng", "Oversized Striped Shirt");
+        map.put("Áo Khoác Dạ Dáng Dài", "Long Wool Coat");
+        map.put("Chân Váy Bút Chì Ôm Dáng", "Fitted Pencil Skirt");
+        map.put("Áo Len Cổ Lọ Ấm Áp", "Warm Turtleneck Sweater");
+        map.put("Áo Blouse Trễ Vai Họa Tiết", "Printed Off-Shoulder Blouse");
+        map.put("Quần Short Da Thời Trang", "Trendy Leather Shorts");
+        map.put("Chân Váy Len Dệt Kim", "Knit Midi Skirt");
+        map.put("Set Bộ Dệt Kim Thanh Lịch", "Elegant Knit Set");
+        map.put("Áo Blazer Nữ Đen Classic", "Classic Black Blazer");
+        return map;
+    }
+
+    private String generateShortDescription(String englishName) {
+        String base = "Experience the ultimate blend of comfort and style with our exquisite " + englishName + ". ";
+        String filler = "Crafted with meticulous attention to detail, this piece is designed to elevate your everyday wardrobe. The premium materials ensure durability while providing a soft, luxurious feel against the skin. Whether you're heading to the office, a casual outing, or a special evening event, this versatile garment adapts effortlessly to any occasion. Its modern silhouette flatters all body types, offering a tailored fit that moves with you. The timeless design means it will remain a staple in your closet season after season. Easy to care for and incredibly comfortable to wear, it's the perfect choice for those who refuse to compromise on quality or fashion. Pair it with your favorite accessories to create a look that is uniquely yours. Step out with confidence and make a lasting impression with a garment that truly understands your lifestyle needs. Designed for the contemporary individual, it seamlessly bridges the gap between classic elegance and modern trends. Add this essential piece to your collection and discover a new level of sartorial excellence.";
+        return base + filler;
+    }
+
+    private String generateLongDescription(String englishName) {
+        String base = "Introducing the latest addition to our premium collection, the " + englishName + ". ";
+        String filler = "This exceptional piece has been thoughtfully designed for the modern trendsetter who values both aesthetics and functionality. Every stitch and seam has been carefully constructed using state-of-the-art manufacturing techniques to ensure an impeccable finish. The high-quality fabric not only drapes beautifully but also offers excellent breathability, keeping you comfortable throughout the day. \n\n" +
+                "In today's fast-paced world, versatility is key, and this garment delivers on all fronts. It transitions seamlessly from day to night, making it an indispensable part of your wardrobe. The elegant cut and sophisticated detailing provide a polished look that is suitable for professional settings, yet relaxed enough for weekend wear. We believe that fashion should empower you, which is why we have focused on creating a silhouette that is both flattering and forgiving. \n\n" +
+                "Beyond its visual appeal, we are committed to sustainability. The materials used in this product are sourced responsibly, reflecting our dedication to ethical fashion practices. You can wear this piece with pride, knowing that it aligns with environmentally conscious values. Furthermore, the garment is designed for longevity, resisting wear and tear even with frequent use. It retains its shape and color wash after wash, ensuring that it remains a favorite for years to come. \n\n" +
+                "Styling this piece is a breeze. It serves as a perfect canvas for your personal style. Dress it up with statement jewelry and elegant footwear, or keep it casual with your favorite sneakers and a denim jacket. The possibilities are endless. We invite you to experience the unparalleled quality and timeless design of this remarkable garment. It is more than just clothing; it is an investment in your personal style and confidence. Elevate your everyday look and embrace the perfect synthesis of luxury and practicality with a piece that truly stands out in any crowd. Discover the difference that expert craftsmanship and premium materials can make in your daily wardrobe.";
+        return base + filler;
     }
 }

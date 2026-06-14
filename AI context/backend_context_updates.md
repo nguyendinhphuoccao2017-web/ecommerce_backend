@@ -146,3 +146,9 @@ Tài liệu này lưu trữ lịch sử các chức năng đã làm, theo dõi c
     - Thay vì truyền cứng chữ "Brand" ở các thẻ sản phẩm trên giao diện, Backend đã được cập nhật để trực tiếp gửi dữ liệu mã `sku` từ Database lên cho Client ở toàn bộ các endpoint (Shop, Favorites).
     - Các đối tượng DTO `ProductCategoryResponseDTO` và `FavoriteResponseDTO` được khai báo thêm biến `String sku`.
     - Tái cấu trúc lại các câu JPQL `@Query` (cụ thể là `findProductsByCategoryIdAndCustomerId`, `findProductsByCategoryIdAndTagAndCustomerId`, `findFavoriteProductsByCustomerId`, `findFavoriteProductsWithDetails`) bằng cách gắn thêm `p.sku` vào cả mệnh đề `SELECT` lẫn `GROUP BY`.
+
+### 21. Khắc Phục Lỗi Báo Đỏ & Cảnh Báo Deprecated (Hibernate 6)
+- **File:** `StaffAccount.java`, `CustomUserDetails.java`, `TestSeederController.java`
+- **Thay đổi & Mục đích:**
+    - **Sửa cảnh báo Deprecation**: Xóa bỏ bộ đôi annotation `@GeneratedValue(generator = "UUID")` và `@GenericGenerator` cũ kĩ vốn không còn tương thích tốt với Hibernate 6. Thay thế bằng chuẩn JPA hiện đại `@GeneratedValue(strategy = GenerationType.UUID)` trên trường ID (kiểu UUID) của `StaffAccount`. Đảm bảo code sạch (clean) và tuân thủ các version mới nhất của Spring Boot 3.
+    - **Lỗi Lombok / IDE**: Các lỗi báo đỏ (như `getActive()` không tồn tại, thiếu thư viện khi import) được xác định là do IDE (IntelliJ/VSCode) bị tắt/lỗi plugin Lombok, khiến nó không nhận diện được các hàm tự động sinh của `@Data`, `@Getter`, `@Setter`. Backend core vẫn biên dịch (`mvn clean compile`) và chạy hoàn toàn bình thường.

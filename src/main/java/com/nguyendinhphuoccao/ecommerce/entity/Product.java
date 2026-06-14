@@ -41,7 +41,7 @@ public class Product {
     @Column(name = "quantity", nullable = false)
     private Integer quantity;
 
-    @Column(name = "short_description", nullable = false, length = 165)
+    @Column(name = "short_description", nullable = false, columnDefinition = "TEXT")
     private String shortDescription;
 
     @Column(name = "product_description", nullable = false, columnDefinition = "TEXT")
