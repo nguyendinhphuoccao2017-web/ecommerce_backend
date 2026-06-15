@@ -41,4 +41,10 @@ public class ProductReviewController {
     public ResponseEntity<List<ProductReview>> getAll() {
         return ResponseEntity.ok(service.getAll());
     }
+
+    @PostMapping("/{id}/helpful")
+    public ResponseEntity<Void> incrementHelpfulCount(@PathVariable UUID id) {
+        service.incrementHelpfulCount(id);
+        return ResponseEntity.ok().build();
+    }
 }

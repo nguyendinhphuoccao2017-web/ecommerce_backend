@@ -2,6 +2,7 @@ package com.nguyendinhphuoccao.ecommerce.controller;
 
 import com.nguyendinhphuoccao.ecommerce.entity.Product;
 import com.nguyendinhphuoccao.ecommerce.service.ProductService;
+import com.nguyendinhphuoccao.ecommerce.service.ProductReviewService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -17,6 +18,7 @@ import com.nguyendinhphuoccao.ecommerce.dto.product.ProductRequestDTO;
 public class ProductController {
 
     private final ProductService service;
+    private final ProductReviewService reviewService;
 
     @PostMapping
     public ResponseEntity<Product> create(@RequestBody ProductRequestDTO request) {
@@ -62,5 +64,25 @@ public class ProductController {
     @GetMapping("/{id}/related")
     public ResponseEntity<List<com.nguyendinhphuoccao.ecommerce.dto.product.ProductHomeResponseDTO>> getRelatedProducts(@PathVariable UUID id) {
         return ResponseEntity.ok(service.getRelatedProducts(id));
+    }
+
+    @GetMapping("/{id}/reviews")
+    public ResponseEntity<org.springframework.data.domain.Page<com.nguyendinhphuoccao.ecommerce.dto.review.ReviewResponseDTO>> getProductReviews(
+            @PathVariable UUID id,
+            @RequestParam(defaultValue = "false") boolean withPhoto,
+            org.springframework.data.domain.Pageable pageable) {
+        return ResponseEntity.ok(reviewService.getProductReviews(id, withPhoto, pageable));
+    }
+
+    @GetMapping("/{id}/reviews/summary")
+    public ResponseEntity<com.nguyendinhphuoccao.ecommerce.dto.review.ReviewSummaryDTO> getProductReviewSummary(@PathVariable UUID id) {
+        return ResponseEntity.ok(reviewService.getProductReviewSummary(id));
+    }
+
+    @PostMapping("/{id}/reviews")
+    public ResponseEntity<com.nguyendinhphuoccao.ecommerce.entity.ProductReview> addReview(
+            @PathVariable UUID id,
+            @RequestBody com.nguyendinhphuoccao.ecommerce.dto.review.ReviewRequestDTO request) {
+        return ResponseEntity.ok(reviewService.addReview(id, request));
     }
 }

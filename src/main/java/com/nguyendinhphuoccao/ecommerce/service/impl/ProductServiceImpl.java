@@ -315,7 +315,7 @@ public class ProductServiceImpl implements ProductService {
         double avgRating = 0.0;
         long totalReviews = 0;
         if (product.getProductReviews() != null && !product.getProductReviews().isEmpty()) {
-            List<com.nguyendinhphuoccao.ecommerce.entity.ProductReview> pubReviews = product.getProductReviews().stream().filter(r -> r.getPublished() != null && r.getPublished()).toList();
+            List<com.nguyendinhphuoccao.ecommerce.entity.ProductReview> pubReviews = product.getProductReviews().stream().filter(r -> r.getIsApproved() != null && r.getIsApproved()).toList();
             totalReviews = pubReviews.size();
             if (totalReviews > 0) {
                 avgRating = pubReviews.stream().mapToDouble(com.nguyendinhphuoccao.ecommerce.entity.ProductReview::getRating).average().orElse(0.0);

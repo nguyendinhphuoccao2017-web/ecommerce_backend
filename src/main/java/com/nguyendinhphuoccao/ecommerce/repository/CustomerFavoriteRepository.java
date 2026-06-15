@@ -21,7 +21,7 @@ public interface CustomerFavoriteRepository extends JpaRepository<CustomerFavori
             "FROM CustomerFavorite cf " +
             "JOIN cf.product p " +
             "LEFT JOIN cf.variantOption vo " +
-            "LEFT JOIN p.productReviews r ON r.published = true " +
+            "LEFT JOIN p.productReviews r ON r.isApproved = true " +
             "WHERE cf.customer.id = :customerId AND p.published = true " +
             "GROUP BY p.id, p.productName, p.slug, p.salePrice, p.comparePrice, vo.salePrice, vo.comparePrice, vo.image.image, vo.title, vo.id, cf.createdAt, p.sku " +
             "ORDER BY cf.createdAt DESC")

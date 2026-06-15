@@ -22,7 +22,7 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
             "(CASE WHEN EXISTS (SELECT 1 FROM CustomerFavorite cf WHERE cf.product.id = p.id AND cf.customer.id = :customerId) THEN true ELSE false END)) " +
             "FROM Product p " +
             "JOIN p.tags t " +
-            "LEFT JOIN p.productReviews r ON r.published = true " +
+            "LEFT JOIN p.productReviews r ON r.isApproved = true " +
             "WHERE t.tagName = :tagName AND p.published = true " +
             "GROUP BY p.id, p.productName, p.salePrice, p.comparePrice, p.sku " +
             "ORDER BY p.createdAt DESC")
@@ -36,7 +36,7 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
             "(CASE WHEN EXISTS (SELECT 1 FROM CustomerFavorite cf WHERE cf.product.id = p.id AND cf.customer.id = :customerId) THEN true ELSE false END), p.sku) " +
             "FROM Product p " +
             "JOIN p.productCategories pc " +
-            "LEFT JOIN p.productReviews r ON r.published = true " +
+            "LEFT JOIN p.productReviews r ON r.isApproved = true " +
             "WHERE pc.category.id = :categoryId AND p.published = true " +
             "GROUP BY p.id, p.productName, p.slug, p.salePrice, p.comparePrice, p.sku " +
             "ORDER BY p.createdAt DESC")
@@ -51,7 +51,7 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
             "FROM Product p " +
             "JOIN p.productCategories pc " +
             "JOIN p.tags t " +
-            "LEFT JOIN p.productReviews r ON r.published = true " +
+            "LEFT JOIN p.productReviews r ON r.isApproved = true " +
             "WHERE pc.category.id = :categoryId AND t.tagName = :tagName AND p.published = true " +
             "GROUP BY p.id, p.productName, p.slug, p.salePrice, p.comparePrice, p.sku " +
             "ORDER BY p.createdAt DESC")
@@ -65,7 +65,7 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
             "true, p.sku) " +
             "FROM Product p " +
             "JOIN CustomerFavorite cf ON cf.product.id = p.id " +
-            "LEFT JOIN p.productReviews r ON r.published = true " +
+            "LEFT JOIN p.productReviews r ON r.isApproved = true " +
             "WHERE cf.customer.id = :customerId AND p.published = true " +
             "GROUP BY p.id, p.productName, p.slug, p.salePrice, p.comparePrice, cf.createdAt, p.sku " +
             "ORDER BY cf.createdAt DESC")

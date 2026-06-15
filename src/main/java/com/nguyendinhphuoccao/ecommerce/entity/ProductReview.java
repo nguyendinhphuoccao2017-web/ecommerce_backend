@@ -2,7 +2,12 @@ package com.nguyendinhphuoccao.ecommerce.entity;
 
 import jakarta.persistence.*;
 import lombok.*;
+import org.hibernate.annotations.CreationTimestamp;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.annotations.UpdateTimestamp;
+import org.hibernate.type.SqlTypes;
 import java.time.OffsetDateTime;
+import java.util.List;
 import java.util.UUID;
 
 @Entity
@@ -26,21 +31,45 @@ public class ProductReview {
     @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "order_item_id")
+    private OrderItem orderItem;
+
     @Column(name = "rating", nullable = false)
     private Integer rating;
 
-    @Column(name = "title", length = 100)
+    @Column(name = "title", length = 255)
     private String title;
 
-    @Column(name = "content", columnDefinition = "TEXT")
-    private String content;
+    @Column(name = "comment", columnDefinition = "TEXT")
+    private String comment;
 
-    @Column(name = "published")
-    private Boolean published;
+    @JdbcTypeCode(SqlTypes.ARRAY)
+    @Column(name = "images", columnDefinition = "text[]")
+    private List<String> images;
 
-    @Column(name = "created_at", nullable = false)
+    @Column(name = "is_approved")
+    private Boolean isApproved;
+
+    @Column(name = "is_verified_purchase")
+    private Boolean isVerifiedPurchase;
+
+    @Column(name = "helpful_count")
+    private Integer helpfulCount;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "created_by")
+    private StaffAccount createdBy;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "updated_by")
+    private StaffAccount updatedBy;
+
+    @CreationTimestamp
+    @Column(name = "created_at", nullable = false, updatable = false)
     private OffsetDateTime createdAt;
 
+    @UpdateTimestamp
     @Column(name = "updated_at", nullable = false)
     private OffsetDateTime updatedAt;
 }

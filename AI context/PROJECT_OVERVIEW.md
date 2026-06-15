@@ -1,6 +1,6 @@
 # 🚀 E-commerce Project Overview
 
-**Ngày cập nhật**: 07/06/2026
+**Ngày cập nhật**: 15/06/2026
 **Mục đích**: Tài liệu này đóng vai trò là "bộ nhớ trung tâm" (Central Memory Bank) cho AI và các kỹ sư phần mềm khi làm việc trên dự án E-commerce này. Chứa toàn bộ thông tin mới nhất về kiến trúc, cấu trúc thư mục, công nghệ sử dụng của cả hai phần Frontend (FE) và Backend (BE).
 
 ---
