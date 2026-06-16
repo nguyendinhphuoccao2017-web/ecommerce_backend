@@ -152,3 +152,17 @@ Tài liệu này lưu trữ lịch sử các chức năng đã làm, theo dõi c
 - **Thay đổi & Mục đích:**
     - **Sửa cảnh báo Deprecation**: Xóa bỏ bộ đôi annotation `@GeneratedValue(generator = "UUID")` và `@GenericGenerator` cũ kĩ vốn không còn tương thích tốt với Hibernate 6. Thay thế bằng chuẩn JPA hiện đại `@GeneratedValue(strategy = GenerationType.UUID)` trên trường ID (kiểu UUID) của `StaffAccount`. Đảm bảo code sạch (clean) và tuân thủ các version mới nhất của Spring Boot 3.
     - **Lỗi Lombok / IDE**: Các lỗi báo đỏ (như `getActive()` không tồn tại, thiếu thư viện khi import) được xác định là do IDE (IntelliJ/VSCode) bị tắt/lỗi plugin Lombok, khiến nó không nhận diện được các hàm tự động sinh của `@Data`, `@Getter`, `@Setter`. Backend core vẫn biên dịch (`mvn clean compile`) và chạy hoàn toàn bình thường.
+
+### 22. Tích Hợp Số Lượng Tồn Kho Vào Danh Sách Yêu Thích & Xử Lý "Sold Out"
+- **File:** `FavoriteResponseDTO.java`, `CustomerFavoriteRepository.java`
+- **Thay đổi & Mục đích:**
+    - Bổ sung trường `availableStock` vào `FavoriteResponseDTO`.
+    - Cập nhật JPQL trong `CustomerFavoriteRepository` dùng `COALESCE(vo.quantity, p.quantity)` để ánh xạ số lượng tồn kho theo đúng Biến Thể (nếu User chọn) hoặc Sản Phẩm gốc, nhằm cung cấp dữ liệu cho Frontend vô hiệu hóa nút "Add to Bag" đối với hàng hết số lượng.
+    - Chạy script cập nhật Database thực tế: Đưa số lượng tồn kho của 48 sản phẩm về 100 và cố ý set `quantity = 0` cho 2 sản phẩm (cùng với toàn bộ các Variant của chúng) để làm Data Test kiểm tra giao diện "Sold Out" trên ứng dụng Flutter.
+
+### 23. Nền Tảng Chức Năng Giỏ Hàng (Cart/Bag) & Add To Cart Logic
+- **File:** `CardRepository.java`, `CardItemRepository.java`, `CardServiceImpl.java`, `CardController.java`, `AddToCartRequestDTO.java`
+- **Thay đổi & Mục đích:**
+    - Khởi tạo `AddToCartRequestDTO` để định dạng Data thêm vào giỏ hàng từ Frontend.
+    - Bổ sung các query methods quan trọng như `findByCustomerId`, `findByCardIdAndProductId` và tổng hợp số lượng hiện có bằng `SUM(ci.quantity)` trong Repository.
+    - Xây dựng `CardServiceImpl` xử lý logic "Thêm vào Giỏ Hàng" (Add to Cart). Áp dụng tính toán luỹ kế an toàn: Lấy số lượng yêu cầu mới cộng dồn với tổng số lượng sản phẩm đó đang nằm sẵn trong giỏ hàng. Chỉ khi nào tổng này nhỏ hơn hoặc bằng tồn kho thực tế (`availableStock`) thì hệ thống mới cho phép thêm. Trường hợp thiếu hàng sẽ ném Exception cảnh báo. Thiết kế API `POST /api/cards/add` để phục vụ luồng này.

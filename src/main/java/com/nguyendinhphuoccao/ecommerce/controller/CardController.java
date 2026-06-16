@@ -21,6 +21,17 @@ public class CardController {
         return ResponseEntity.ok(service.create(entity));
     }
 
+    @PostMapping("/add")
+    public ResponseEntity<Void> addToCart(
+            @RequestBody com.nguyendinhphuoccao.ecommerce.dto.cart.AddToCartRequestDTO request,
+            @org.springframework.security.core.annotation.AuthenticationPrincipal com.nguyendinhphuoccao.ecommerce.security.CustomUserDetails userDetails) {
+        if (userDetails == null || userDetails.getCustomer() == null || userDetails.getCustomer().getId() == null) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
+        }
+        service.addToCart(userDetails.getCustomer().getId(), request);
+        return ResponseEntity.ok().build();
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<Card> update(@PathVariable UUID id, @RequestBody Card entity) {
         return ResponseEntity.ok(service.update(id, entity));

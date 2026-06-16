@@ -25,8 +25,9 @@ public class FavoriteResponseDTO {
     private String variantTitle;
     private UUID variantOptionId;
     private String sku;
+    private Integer availableStock;
 
-    public FavoriteResponseDTO(UUID productId, String productName, String slug, BigDecimal salePrice, BigDecimal comparePrice, String thumbnailUrl, Double averageRating, Long totalReviews, Boolean isFavorite, String variantTitle, UUID variantOptionId, String sku) {
+    public FavoriteResponseDTO(UUID productId, String productName, String slug, BigDecimal salePrice, BigDecimal comparePrice, String thumbnailUrl, Double averageRating, Long totalReviews, Boolean isFavorite, String variantTitle, UUID variantOptionId, String sku, Integer availableStock) {
         this.productId = productId;
         this.productName = productName;
         this.slug = slug;
@@ -39,5 +40,6 @@ public class FavoriteResponseDTO {
         this.variantTitle = variantTitle;
         this.variantOptionId = variantOptionId;
         this.sku = sku;
+        this.availableStock = availableStock;
     }
 }
