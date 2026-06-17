@@ -11,8 +11,9 @@ import java.util.UUID;
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
-public class AddToCartRequestDTO {
-    private UUID productId;
-    private UUID variantOptionId;
-    private Integer quantity;
+public class CheckoutRequestDTO {
+    private UUID shippingAddressId;
+    private String paymentMethod;
+    private String deliveryMethod;
+    private String couponCode;
 }

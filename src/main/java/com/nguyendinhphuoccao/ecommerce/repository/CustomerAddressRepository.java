@@ -7,4 +7,5 @@ import java.util.UUID;
 
 @Repository
 public interface CustomerAddressRepository extends JpaRepository<CustomerAddress, UUID> {
+    java.util.List<CustomerAddress> findByCustomerIdAndIsActiveTrue(UUID customerId);
 }

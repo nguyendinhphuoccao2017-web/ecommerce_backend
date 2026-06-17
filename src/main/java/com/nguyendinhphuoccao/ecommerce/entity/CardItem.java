@@ -27,4 +27,8 @@ public class CardItem {
 
     @Column(name = "quantity")
     private Integer quantity;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "variant_option_id")
+    private VariantOption variantOption;
 }

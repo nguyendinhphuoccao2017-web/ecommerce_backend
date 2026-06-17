@@ -13,5 +13,9 @@ public interface CardItemRepository extends JpaRepository<CardItem, UUID> {
     @org.springframework.data.jpa.repository.Query("SELECT SUM(ci.quantity) FROM CardItem ci JOIN ci.card c WHERE c.customer.id = :customerId AND ci.product.id = :productId")
     Integer sumQuantityByCustomerAndProduct(@org.springframework.data.repository.query.Param("customerId") UUID customerId, @org.springframework.data.repository.query.Param("productId") UUID productId);
 
-    Optional<CardItem> findByCardIdAndProductId(UUID cardId, UUID productId);
+    @org.springframework.data.jpa.repository.Query("SELECT SUM(ci.quantity) FROM CardItem ci JOIN ci.card c WHERE c.customer.id = :customerId AND ci.product.id = :productId AND (ci.variantOption.id = :variantId OR (:variantId IS NULL AND ci.variantOption IS NULL))")
+    Integer sumQuantityByCustomerAndProductAndVariant(@org.springframework.data.repository.query.Param("customerId") UUID customerId, @org.springframework.data.repository.query.Param("productId") UUID productId, @org.springframework.data.repository.query.Param("variantId") UUID variantId);
+
+    @org.springframework.data.jpa.repository.Query("SELECT ci FROM CardItem ci WHERE ci.card.id = :cardId AND ci.product.id = :productId AND (ci.variantOption.id = :variantId OR (:variantId IS NULL AND ci.variantOption IS NULL))")
+    Optional<CardItem> findByCardIdAndProductIdAndVariantOption(@org.springframework.data.repository.query.Param("cardId") UUID cardId, @org.springframework.data.repository.query.Param("productId") UUID productId, @org.springframework.data.repository.query.Param("variantId") UUID variantId);
 }

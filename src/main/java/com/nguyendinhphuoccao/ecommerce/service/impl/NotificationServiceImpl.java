@@ -9,10 +9,13 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.UUID;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.scheduling.annotation.Async;
 
 @Service
 @RequiredArgsConstructor
 @Transactional
+@Slf4j
 public class NotificationServiceImpl implements NotificationService {
 
     private final NotificationRepository repository;
@@ -46,5 +49,20 @@ public class NotificationServiceImpl implements NotificationService {
     @Transactional(readOnly = true)
     public List<Notification> getAll() {
         return repository.findAll();
+    }
+
+    @Override
+    @Async
+    public void sendOrderConfirmationEmail(String email, String orderId) {
+        log.info("START ASYNC TASK: Sending order confirmation email to {} for order ID: {}", email, orderId);
+        
+        try {
+            // Simulate network delay for email sending
+            Thread.sleep(1000);
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+        
+        log.info("END ASYNC TASK: Order confirmation email successfully sent to {}", email);
     }
 }

@@ -33,7 +33,11 @@ public class CustomerAddressServiceImpl implements CustomerAddressService {
 
     @Override
     public void delete(UUID id) {
-        repository.deleteById(id);
+        CustomerAddress address = repository.findById(id).orElse(null);
+        if (address != null) {
+            address.setIsActive(false);
+            repository.save(address);
+        }
     }
 
     @Override
@@ -46,5 +50,11 @@ public class CustomerAddressServiceImpl implements CustomerAddressService {
     @Transactional(readOnly = true)
     public List<CustomerAddress> getAll() {
         return repository.findAll();
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public List<CustomerAddress> getMyAddresses(UUID customerId) {
+        return repository.findByCustomerIdAndIsActiveTrue(customerId);
     }
 }

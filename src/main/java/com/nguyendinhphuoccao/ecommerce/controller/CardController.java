@@ -32,6 +32,15 @@ public class CardController {
         return ResponseEntity.ok().build();
     }
 
+    @GetMapping("/my-cart")
+    public ResponseEntity<com.nguyendinhphuoccao.ecommerce.dto.cart.CartResponseDTO> getMyCart(
+            @org.springframework.security.core.annotation.AuthenticationPrincipal com.nguyendinhphuoccao.ecommerce.security.CustomUserDetails userDetails) {
+        if (userDetails == null || userDetails.getCustomer() == null || userDetails.getCustomer().getId() == null) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
+        }
+        return ResponseEntity.ok(service.getCart(userDetails.getCustomer().getId()));
+    }
+
     @PutMapping("/{id}")
     public ResponseEntity<Card> update(@PathVariable UUID id, @RequestBody Card entity) {
         return ResponseEntity.ok(service.update(id, entity));

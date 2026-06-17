@@ -323,4 +323,32 @@ public class TestSeederController {
                 "Styling this piece is a breeze. It serves as a perfect canvas for your personal style. Dress it up with statement jewelry and elegant footwear, or keep it casual with your favorite sneakers and a denim jacket. The possibilities are endless. We invite you to experience the unparalleled quality and timeless design of this remarkable garment. It is more than just clothing; it is an investment in your personal style and confidence. Elevate your everyday look and embrace the perfect synthesis of luxury and practicality with a piece that truly stands out in any crowd. Discover the difference that expert craftsmanship and premium materials can make in your daily wardrobe.";
         return base + filler;
     }
+
+    @PostMapping("/seed-quantity")
+    @Transactional
+    public ResponseEntity<String> seedQuantity() {
+        jdbcTemplate.execute("UPDATE products SET quantity = 100");
+        jdbcTemplate.execute("UPDATE variant_options SET quantity = 100");
+
+        // Set 2 products to 0 for "Sold Out" testing
+        jdbcTemplate.execute("UPDATE products SET quantity = 0 WHERE product_name IN ('Short Puffer Jacket', 'Cable Knit Cardigan', 'Áo Phao Dáng Ngắn', 'Áo Cardigan Len Thừng')");
+        jdbcTemplate.execute("UPDATE variant_options SET quantity = 0 WHERE product_id IN (SELECT id FROM products WHERE quantity = 0)");
+
+        return ResponseEntity.ok("Successfully updated quantity to 100 for all products, and 0 for 2 specific products (Short Puffer Jacket, Cable Knit Cardigan) for Sold Out testing.");
+    }
+
+    @PostMapping("/update-slideshows")
+    @Transactional
+    public ResponseEntity<String> updateSlideshows() {
+        jdbcTemplate.execute("UPDATE slideshows SET image = 'https://nddvgywmwxlmkmextxre.supabase.co/storage/v1/object/public/slideshow-images/slideshow_2.png' WHERE display_order = 2");
+        
+        Integer count3 = jdbcTemplate.queryForObject("SELECT COUNT(*) FROM slideshows WHERE display_order = 3", Integer.class);
+        if (count3 != null && count3 > 0) {
+            jdbcTemplate.execute("UPDATE slideshows SET image = 'https://nddvgywmwxlmkmextxre.supabase.co/storage/v1/object/public/slideshow-images/slideshow_3.png' WHERE display_order = 3");
+        } else {
+            jdbcTemplate.execute("INSERT INTO slideshows (id, image, title, placeholder, display_order, published, clicks, created_at, updated_at) VALUES (gen_random_uuid(), 'https://nddvgywmwxlmkmextxre.supabase.co/storage/v1/object/public/slideshow-images/slideshow_3.png', 'Slideshow 3', 'placeholder', 3, true, 0, now(), now())");
+        }
+        
+        return ResponseEntity.ok("Successfully updated slideshow 2 and 3");
+    }
 }

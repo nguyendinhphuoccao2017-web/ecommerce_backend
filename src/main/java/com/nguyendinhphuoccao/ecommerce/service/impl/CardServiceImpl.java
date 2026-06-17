@@ -20,6 +20,7 @@ public class CardServiceImpl implements CardService {
     private final com.nguyendinhphuoccao.ecommerce.repository.CustomerRepository customerRepository;
     private final com.nguyendinhphuoccao.ecommerce.repository.ProductRepository productRepository;
     private final com.nguyendinhphuoccao.ecommerce.repository.CardItemRepository cardItemRepository;
+    private final com.nguyendinhphuoccao.ecommerce.repository.VariantOptionRepository variantOptionRepository;
 
     @Override
     public Card create(Card entity) {
@@ -69,7 +70,15 @@ public class CardServiceImpl implements CardService {
         int stock = product.getQuantity() != null ? product.getQuantity() : 0;
         int requestQty = request.getQuantity() != null ? request.getQuantity() : 1;
 
-        com.nguyendinhphuoccao.ecommerce.entity.CardItem cardItem = cardItemRepository.findByCardIdAndProductId(card.getId(), product.getId())
+        com.nguyendinhphuoccao.ecommerce.entity.VariantOption variantOption = null;
+        if (request.getVariantOptionId() != null) {
+            variantOption = variantOptionRepository.findById(request.getVariantOptionId())
+                    .orElseThrow(() -> new RuntimeException("Variant not found"));
+            stock = variantOption.getQuantity() != null ? variantOption.getQuantity() : 0;
+        }
+
+        com.nguyendinhphuoccao.ecommerce.entity.CardItem cardItem = cardItemRepository
+                .findByCardIdAndProductIdAndVariantOption(card.getId(), product.getId(), request.getVariantOptionId())
                 .orElse(null);
 
         int currentQty = (cardItem != null && cardItem.getQuantity() != null) ? cardItem.getQuantity() : 0;
@@ -86,8 +95,72 @@ public class CardServiceImpl implements CardService {
             CardItem newItem = new CardItem();
             newItem.setCard(card);
             newItem.setProduct(product);
+            newItem.setVariantOption(variantOption);
             newItem.setQuantity(requestQty);
             cardItemRepository.save(newItem);
         }
+    }
+
+    @Override
+    @Transactional(readOnly = true)
+    public com.nguyendinhphuoccao.ecommerce.dto.cart.CartResponseDTO getCart(UUID customerId) {
+        Card card = repository.findByCustomerId(customerId).orElse(null);
+        if (card == null) {
+            return com.nguyendinhphuoccao.ecommerce.dto.cart.CartResponseDTO.builder()
+                    .items(java.util.Collections.emptyList())
+                    .subtotal(java.math.BigDecimal.ZERO)
+                    .build();
+        }
+
+        java.math.BigDecimal subtotal = java.math.BigDecimal.ZERO;
+        List<com.nguyendinhphuoccao.ecommerce.dto.cart.CartItemDTO> itemDTOs = new java.util.ArrayList<>();
+
+        if (card.getCardItems() != null) {
+            for (CardItem item : card.getCardItems()) {
+                com.nguyendinhphuoccao.ecommerce.entity.Product product = item.getProduct();
+                if (product == null) continue;
+
+                java.math.BigDecimal price = product.getSalePrice(); // Fallback to regular price if variants aren't used yet
+                String variantTitle = null;
+                Integer maxStock = product.getQuantity();
+                
+                if (item.getVariantOption() != null) {
+                    com.nguyendinhphuoccao.ecommerce.entity.VariantOption vo = item.getVariantOption();
+                    price = vo.getSalePrice() != null ? vo.getSalePrice() : vo.getComparePrice();
+                    if (price == null) price = product.getSalePrice();
+                    variantTitle = vo.getTitle();
+                    maxStock = vo.getQuantity();
+                }
+
+                if (price == null) price = java.math.BigDecimal.ZERO;
+                java.math.BigDecimal itemTotal = price.multiply(java.math.BigDecimal.valueOf(item.getQuantity()));
+                subtotal = subtotal.add(itemTotal);
+
+                String imageUrl = null;
+                if (product.getGalleries() != null && !product.getGalleries().isEmpty()) {
+                    imageUrl = product.getGalleries().stream().filter(g -> g.getIsThumbnail() != null && g.getIsThumbnail()).map(g -> g.getImage()).findFirst().orElse(null);
+                    if (imageUrl == null) imageUrl = product.getGalleries().get(0).getImage();
+                }
+
+                itemDTOs.add(com.nguyendinhphuoccao.ecommerce.dto.cart.CartItemDTO.builder()
+                        .id(item.getId())
+                        .productId(product.getId())
+                        .productName(product.getProductName())
+                        .sku(item.getVariantOption() != null ? item.getVariantOption().getSku() : product.getSku())
+                        .salePrice(price)
+                        .image(imageUrl)
+                        .variantOptionId(item.getVariantOption() != null ? item.getVariantOption().getId() : null)
+                        .variantTitle(variantTitle)
+                        .quantity(item.getQuantity())
+                        .maxQuantity(maxStock)
+                        .build());
+            }
+        }
+
+        return com.nguyendinhphuoccao.ecommerce.dto.cart.CartResponseDTO.builder()
+                .cardId(card.getId())
+                .items(itemDTOs)
+                .subtotal(subtotal)
+                .build();
     }
 }

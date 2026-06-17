@@ -10,4 +10,5 @@ public interface NotificationService {
     void delete(UUID id);
     Notification getById(UUID id);
     List<Notification> getAll();
+    void sendOrderConfirmationEmail(String email, String orderId);
 }

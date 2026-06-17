@@ -21,6 +21,9 @@ public class CustomerAddress {
     @JoinColumn(name = "customer_id", nullable = false)
     private Customer customer;
 
+    @Column(name = "full_name")
+    private String fullName;
+
     @Column(name = "address_line1", nullable = false, columnDefinition = "TEXT")
     private String addressLine1;
 
@@ -41,4 +44,11 @@ public class CustomerAddress {
 
     @Column(name = "city", nullable = false)
     private String city;
+
+    @Column(name = "state")
+    private String state;
+
+    @Column(name = "is_active", nullable = false)
+    @Builder.Default
+    private Boolean isActive = true;
 }

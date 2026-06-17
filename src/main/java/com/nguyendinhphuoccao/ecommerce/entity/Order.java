@@ -49,4 +49,10 @@ public class Order {
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL)
     @com.fasterxml.jackson.annotation.JsonIgnore
     private List<OrderItem> orderItems;
+
+    @Column(name = "discount_amount")
+    private java.math.BigDecimal discountAmount;
+
+    @Column(name = "payment_method", length = 50)
+    private String paymentMethod;
 }

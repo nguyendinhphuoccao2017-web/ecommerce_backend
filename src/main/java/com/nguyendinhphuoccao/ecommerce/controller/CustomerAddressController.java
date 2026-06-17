@@ -37,6 +37,27 @@ public class CustomerAddressController {
         return ResponseEntity.ok(service.getById(id));
     }
 
+    @GetMapping("/my-addresses")
+    public ResponseEntity<List<CustomerAddress>> getMyAddresses(
+            @org.springframework.security.core.annotation.AuthenticationPrincipal com.nguyendinhphuoccao.ecommerce.security.CustomUserDetails userDetails) {
+        if (userDetails == null || userDetails.getCustomer() == null || userDetails.getCustomer().getId() == null) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
+        }
+        return ResponseEntity.ok(service.getMyAddresses(userDetails.getCustomer().getId()));
+    }
+
+    @PostMapping("/add")
+    public ResponseEntity<CustomerAddress> addAddress(
+            @RequestBody CustomerAddress entity,
+            @org.springframework.security.core.annotation.AuthenticationPrincipal com.nguyendinhphuoccao.ecommerce.security.CustomUserDetails userDetails) {
+        if (userDetails == null || userDetails.getCustomer() == null || userDetails.getCustomer().getId() == null) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
+        }
+        entity.setCustomer(userDetails.getCustomer());
+        entity.setIsActive(true);
+        return ResponseEntity.ok(service.create(entity));
+    }
+
     @GetMapping
     public ResponseEntity<List<CustomerAddress>> getAll() {
         return ResponseEntity.ok(service.getAll());

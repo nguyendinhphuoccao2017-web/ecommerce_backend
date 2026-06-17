@@ -70,4 +70,8 @@ public interface ProductRepository extends JpaRepository<Product, UUID> {
             "GROUP BY p.id, p.productName, p.slug, p.salePrice, p.comparePrice, cf.createdAt, p.sku " +
             "ORDER BY cf.createdAt DESC")
     List<com.nguyendinhphuoccao.ecommerce.dto.product.ProductCategoryResponseDTO> findFavoriteProductsByCustomerId(@Param("customerId") UUID customerId);
+
+    @org.springframework.data.jpa.repository.Lock(jakarta.persistence.LockModeType.PESSIMISTIC_WRITE)
+    @Query("SELECT p FROM Product p WHERE p.id = :id")
+    java.util.Optional<Product> findByIdWithPessimisticLock(@Param("id") UUID id);
 }

@@ -166,3 +166,10 @@ Tài liệu này lưu trữ lịch sử các chức năng đã làm, theo dõi c
     - Khởi tạo `AddToCartRequestDTO` để định dạng Data thêm vào giỏ hàng từ Frontend.
     - Bổ sung các query methods quan trọng như `findByCustomerId`, `findByCardIdAndProductId` và tổng hợp số lượng hiện có bằng `SUM(ci.quantity)` trong Repository.
     - Xây dựng `CardServiceImpl` xử lý logic "Thêm vào Giỏ Hàng" (Add to Cart). Áp dụng tính toán luỹ kế an toàn: Lấy số lượng yêu cầu mới cộng dồn với tổng số lượng sản phẩm đó đang nằm sẵn trong giỏ hàng. Chỉ khi nào tổng này nhỏ hơn hoặc bằng tồn kho thực tế (`availableStock`) thì hệ thống mới cho phép thêm. Trường hợp thiếu hàng sẽ ném Exception cảnh báo. Thiết kế API `POST /api/cards/add` để phục vụ luồng này.
+
+### 24. Các công cụ Testing & Hỗ trợ Seeder (TestSeederController)
+- **File:** `TestSeederController.java`, `SecurityConfig.java`, `UpdateDB.java`
+- **Thay đổi & Mục đích:** 
+  - Khởi tạo API public `/api/test/seed-quantity` dùng `JdbcTemplate` để cập nhật nhanh chóng cột `quantity` của mọi `products` và `variant_options` lên 100, đồng thời set hard-code 2 sản phẩm riêng biệt (`Short Puffer Jacket` và `Cable Knit Cardigan`) về `quantity = 0` nhằm test UI "Sold Out" phía Frontend.
+  - Cấu hình phân quyền `requestMatchers("/api/test/**").permitAll()` ở SecurityConfig để cho phép bypass token JWT khi gọi các API test nội bộ trên môi trường Dev.
+  - Tạo mới script Java (`UpdateDB.java`) thực thi JDBC thủ công việc UPDATE trực tiếp dữ liệu vào bảng `slideshows`, chèn URL Supabase Storage thực tế cho Slideshow 2 và Slideshow 3 mà không cần GUI thao tác database, và được gọi qua lệnh mvn exec.

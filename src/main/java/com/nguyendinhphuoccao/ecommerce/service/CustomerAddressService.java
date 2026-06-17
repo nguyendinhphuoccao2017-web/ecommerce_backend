@@ -10,4 +10,5 @@ public interface CustomerAddressService {
     void delete(UUID id);
     CustomerAddress getById(UUID id);
     List<CustomerAddress> getAll();
+    List<CustomerAddress> getMyAddresses(UUID customerId);
 }

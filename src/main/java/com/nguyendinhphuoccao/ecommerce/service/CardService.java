@@ -13,4 +13,5 @@ public interface CardService {
     Card getById(UUID id);
     List<Card> getAll();
     void addToCart(UUID customerId, AddToCartRequestDTO request);
+    com.nguyendinhphuoccao.ecommerce.dto.cart.CartResponseDTO getCart(UUID customerId);
 }
