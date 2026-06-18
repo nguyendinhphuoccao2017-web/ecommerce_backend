@@ -54,6 +54,7 @@ public class CheckoutServiceImpl implements CheckoutService {
 
         // Create Order
         Order order = new Order();
+        order.setId(UUID.randomUUID().toString());
         order.setCustomer(customer);
         order.setPaymentMethod(request.getPaymentMethod());
         order.setDiscountAmount(discountAmount);

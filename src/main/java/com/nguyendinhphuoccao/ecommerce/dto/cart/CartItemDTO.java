@@ -23,7 +23,9 @@ public class CartItemDTO {
     
     // Variant info
     private UUID variantOptionId;
-    private String variantTitle; // e.g. "Color: Black, Size: L"
+    private String variantTitle; // e.g. "Cream, L"
+    private String color;
+    private String size;
     
     private Integer quantity;
     private Integer maxQuantity; // Available stock

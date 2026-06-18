@@ -142,6 +142,18 @@ public class CardServiceImpl implements CardService {
                     if (imageUrl == null) imageUrl = product.getGalleries().get(0).getImage();
                 }
 
+                String color = null;
+                String size = null;
+                if (variantTitle != null) {
+                    String[] parts = variantTitle.split(", ");
+                    if (parts.length >= 2) {
+                        color = parts[0];
+                        size = parts[1];
+                    } else if (parts.length == 1) {
+                        color = parts[0];
+                    }
+                }
+
                 itemDTOs.add(com.nguyendinhphuoccao.ecommerce.dto.cart.CartItemDTO.builder()
                         .id(item.getId())
                         .productId(product.getId())
@@ -151,6 +163,8 @@ public class CardServiceImpl implements CardService {
                         .image(imageUrl)
                         .variantOptionId(item.getVariantOption() != null ? item.getVariantOption().getId() : null)
                         .variantTitle(variantTitle)
+                        .color(color)
+                        .size(size)
                         .quantity(item.getQuantity())
                         .maxQuantity(maxStock)
                         .build());
