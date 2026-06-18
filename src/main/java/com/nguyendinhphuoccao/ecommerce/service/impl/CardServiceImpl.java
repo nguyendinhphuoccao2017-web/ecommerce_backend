@@ -9,7 +9,9 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
+import java.util.Map;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +23,8 @@ public class CardServiceImpl implements CardService {
     private final com.nguyendinhphuoccao.ecommerce.repository.ProductRepository productRepository;
     private final com.nguyendinhphuoccao.ecommerce.repository.CardItemRepository cardItemRepository;
     private final com.nguyendinhphuoccao.ecommerce.repository.VariantOptionRepository variantOptionRepository;
+
+    private static final Map<UUID, UUID> cartVariantMap = new ConcurrentHashMap<>();
 
     @Override
     public Card create(Card entity) {
@@ -91,13 +95,19 @@ public class CardServiceImpl implements CardService {
         if (cardItem != null) {
             cardItem.setQuantity(newTotalQty);
             cardItemRepository.save(cardItem);
+            if (request.getVariantOptionId() != null) {
+                cartVariantMap.put(cardItem.getId(), request.getVariantOptionId());
+            }
         } else {
             CardItem newItem = new CardItem();
             newItem.setCard(card);
             newItem.setProduct(product);
             newItem.setVariantOption(variantOption);
             newItem.setQuantity(requestQty);
-            cardItemRepository.save(newItem);
+            newItem = cardItemRepository.save(newItem);
+            if (request.getVariantOptionId() != null) {
+                cartVariantMap.put(newItem.getId(), request.getVariantOptionId());
+            }
         }
     }
 
@@ -123,9 +133,13 @@ public class CardServiceImpl implements CardService {
                 java.math.BigDecimal price = product.getSalePrice(); // Fallback to regular price if variants aren't used yet
                 String variantTitle = null;
                 Integer maxStock = product.getQuantity();
-                
-                if (item.getVariantOption() != null) {
-                    com.nguyendinhphuoccao.ecommerce.entity.VariantOption vo = item.getVariantOption();
+                UUID voId = cartVariantMap.get(item.getId());
+                com.nguyendinhphuoccao.ecommerce.entity.VariantOption vo = null;
+                if (voId != null) {
+                    vo = variantOptionRepository.findById(voId).orElse(null);
+                }
+
+                if (vo != null) {
                     price = vo.getSalePrice() != null ? vo.getSalePrice() : vo.getComparePrice();
                     if (price == null) price = product.getSalePrice();
                     variantTitle = vo.getTitle();
@@ -152,6 +166,10 @@ public class CardServiceImpl implements CardService {
                     } else if (parts.length == 1) {
                         color = parts[0];
                     }
+                } else if (product.getVariantOptions() != null && !product.getVariantOptions().isEmpty()) {
+                    // Fallback An toàn: Không lấy get(0) để tránh mua nhầm
+                    color = "Vui lòng chọn lại";
+                    size = "Vui lòng chọn lại";
                 }
 
                 itemDTOs.add(com.nguyendinhphuoccao.ecommerce.dto.cart.CartItemDTO.builder()
@@ -161,7 +179,7 @@ public class CardServiceImpl implements CardService {
                         .sku(item.getVariantOption() != null ? item.getVariantOption().getSku() : product.getSku())
                         .salePrice(price)
                         .image(imageUrl)
-                        .variantOptionId(item.getVariantOption() != null ? item.getVariantOption().getId() : null)
+                        .variantOptionId(voId)
                         .variantTitle(variantTitle)
                         .color(color)
                         .size(size)
