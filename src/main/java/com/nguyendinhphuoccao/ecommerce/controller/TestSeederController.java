@@ -26,6 +26,8 @@ public class TestSeederController {
     private final ProductAttributeRepository productAttributeRepository;
     private final ProductAttributeValueRepository productAttributeValueRepository;
     private final VariantOptionRepository variantOptionRepository;
+    private final CustomerRepository customerRepository;
+    private final CustomerPaymentMethodRepository paymentMethodRepository;
     private final org.springframework.jdbc.core.JdbcTemplate jdbcTemplate;
     @PostMapping("/seed-colors")
     @Transactional
@@ -350,5 +352,35 @@ public class TestSeederController {
         }
         
         return ResponseEntity.ok("Successfully updated slideshow 2 and 3");
+    }
+
+    @PostMapping("/seed-payment-methods")
+    @Transactional
+    public ResponseEntity<String> seedPaymentMethods() {
+        List<Customer> customers = customerRepository.findAll();
+        for (Customer c : customers) {
+            List<CustomerPaymentMethod> methods = paymentMethodRepository.findByCustomerId(c.getId());
+            if (methods.isEmpty()) {
+                CustomerPaymentMethod mastercard = CustomerPaymentMethod.builder()
+                        .customer(c)
+                        .lastFourDigits("3947")
+                        .cardType("Mastercard")
+                        .cardholderName(c.getFirstName() + " " + c.getLastName())
+                        .isDefault(true)
+                        .build();
+
+                CustomerPaymentMethod visa = CustomerPaymentMethod.builder()
+                        .customer(c)
+                        .lastFourDigits("4546")
+                        .cardType("Visa")
+                        .cardholderName(c.getFirstName() + " " + c.getLastName())
+                        .isDefault(false)
+                        .build();
+
+                paymentMethodRepository.save(mastercard);
+                paymentMethodRepository.save(visa);
+            }
+        }
+        return ResponseEntity.ok("Successfully seeded 2 payment methods (Mastercard, Visa) for all customers.");
     }
 }
