@@ -4,6 +4,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import java.math.BigDecimal;
 import java.time.OffsetDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.UUID;
 import java.util.List;
 
@@ -51,4 +52,12 @@ public class Coupon {
     @OneToMany(mappedBy = "coupon", cascade = CascadeType.ALL)
     @com.fasterxml.jackson.annotation.JsonIgnore
     private List<Order> orders;
+
+    @Transient
+    @com.fasterxml.jackson.annotation.JsonProperty("daysRemaining")
+    public Long getDaysRemaining() {
+        if (couponEndDate == null) return null;
+        long days = ChronoUnit.DAYS.between(OffsetDateTime.now(), couponEndDate);
+        return days < 0 ? 0 : days;
+    }
 }
