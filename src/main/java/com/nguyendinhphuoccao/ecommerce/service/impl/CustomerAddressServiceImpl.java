@@ -24,9 +24,18 @@ public class CustomerAddressServiceImpl implements CustomerAddressService {
 
     @Override
     public CustomerAddress update(UUID id, CustomerAddress entity) {
-        if(repository.existsById(id)) {
-            entity.setId(id);
-            return repository.save(entity);
+        CustomerAddress existing = repository.findById(id).orElse(null);
+        if(existing != null) {
+            existing.setFullName(entity.getFullName());
+            existing.setAddressLine1(entity.getAddressLine1());
+            existing.setAddressLine2(entity.getAddressLine2());
+            existing.setPhoneNumber(entity.getPhoneNumber());
+            existing.setDialCode(entity.getDialCode());
+            existing.setCountry(entity.getCountry());
+            existing.setPostalCode(entity.getPostalCode());
+            existing.setCity(entity.getCity());
+            existing.setState(entity.getState());
+            return repository.save(existing);
         }
         return null;
     }

@@ -1,6 +1,6 @@
 # BACKEND CHECKOUT & BAG SYSTEM CONTEXT
 
-*Last Updated: 2026-06-17*
+*Last Updated: 2026-06-19*
 
 ## 1. Giỏ Hàng (Cart)
 - **Service:** `CardServiceImpl.java` -> Hàm `getCart(UUID customerId)` trả về danh sách chi tiết thay vì Entity, giúp ánh xạ trực tiếp sang `CartResponse` bên FE.
@@ -17,3 +17,6 @@
 
 ## 4. Xử lý Bất Đồng Bộ (Async Notifications)
 - **Service:** `NotificationServiceImpl.java` ứng dụng `@Async` của Spring Boot để gửi Email Xác nhận (giả lập) ngay sau khi Submit Order thành công mà không block luồng xử lý chính.
+
+## 5. System Sync
+- **Trạng thái:** Toàn bộ RESTful API liên quan đến Giỏ Hàng và Thanh Toán đã được tích hợp thành công, đồng bộ hoá dữ liệu và hoạt động ổn định với ứng dụng Frontend (Flutter).
