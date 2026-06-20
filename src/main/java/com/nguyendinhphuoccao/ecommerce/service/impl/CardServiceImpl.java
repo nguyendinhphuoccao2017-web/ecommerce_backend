@@ -112,6 +112,28 @@ public class CardServiceImpl implements CardService {
     }
 
     @Override
+    public void updateItemQuantity(UUID itemId, int quantity) {
+        com.nguyendinhphuoccao.ecommerce.entity.CardItem cardItem = cardItemRepository.findById(itemId)
+                .orElseThrow(() -> new RuntimeException("Item not found"));
+        
+        if (quantity <= 0) {
+            throw new RuntimeException("Quantity must be greater than 0");
+        }
+
+        int stock = cardItem.getProduct().getQuantity() != null ? cardItem.getProduct().getQuantity() : 0;
+        if (cardItem.getVariantOption() != null) {
+            stock = cardItem.getVariantOption().getQuantity() != null ? cardItem.getVariantOption().getQuantity() : 0;
+        }
+
+        if (quantity > stock) {
+            throw new RuntimeException("Not enough stock. Available: " + stock + ", requested: " + quantity);
+        }
+
+        cardItem.setQuantity(quantity);
+        cardItemRepository.save(cardItem);
+    }
+
+    @Override
     @Transactional(readOnly = true)
     public com.nguyendinhphuoccao.ecommerce.dto.cart.CartResponseDTO getCart(UUID customerId) {
         Card card = repository.findByCustomerId(customerId).orElse(null);
