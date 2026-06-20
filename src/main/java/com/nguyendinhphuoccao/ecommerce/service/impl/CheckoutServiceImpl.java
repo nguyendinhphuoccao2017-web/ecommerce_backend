@@ -110,7 +110,10 @@ public class CheckoutServiceImpl implements CheckoutService {
         orderItemRepository.saveAll(orderItems);
 
         // Clear cart
-        cardItemRepository.deleteAll(cartItems);
+        List<CardItem> toDelete = new ArrayList<>(cartItems);
+        cardItemRepository.deleteAll(toDelete);
+        card.getCardItems().clear();
+        cardRepository.save(card);
 
         // Send Notification
         notificationService.sendOrderConfirmationEmail(customer.getEmail(), order.getId().toString());
